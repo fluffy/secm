@@ -2,7 +2,6 @@ package main
 
 /*
 TODO
-set up webserver
 create new keys
 add user for key 
 add admin for key 
@@ -129,6 +128,28 @@ func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func createKeyHandler(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        
+        if r.Method != "POST" {
+                http.Error(w, "method must be POST", http.StatusMethodNotAllowed)
+                return
+        }
+
+	err := r.ParseForm()
+        if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+        }
+
+	var keyVal string = r.FormValue("keyVal");
+	var userID int64 = 1;
+	var keyID int64 = 104;
+	
+	log.Println("POST keyID=", keyID, "userID=",userID, "keyVal=",keyVal )
+	// TODO - save to DB 
+}
+
+
 func main() {
 	var err error
 	
@@ -145,6 +166,7 @@ func main() {
 
 	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/v1/key/", searchKeyHandler)
+	http.HandleFunc("/v1/key", createKeyHandler)
 
         http.ListenAndServe(":8080", nil)
 }
