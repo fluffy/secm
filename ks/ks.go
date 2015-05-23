@@ -41,6 +41,7 @@ func setupDatabase( pgPassword string ) { // todo pass in hostname, port, userna
 
 
 func getKey( keyID, userID int64 ) {
+	// note if using mySQL use ? but Postgres is $1 in prepare statements 
 	stmt, err := db.Prepare(
 		"SELECT keys.kVal  FROM keyUsers JOIN keys ON  keys.kID = keyUsers.kID WHERE keyUsers.uID = $2 AND keyUsers.kID = $1")
 	if err != nil {
