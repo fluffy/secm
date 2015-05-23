@@ -1,5 +1,23 @@
 package main
 
+/*
+TODO
+pass in host on CLI
+deal with no values found 
+set up webserver
+create new keys
+add user for key 
+add admin for key 
+front end with appache
+appache user auth 
+dockerize 
+api doc
+figure out way to load secrets 
+encrypt keys in DB 
+DB backup
+
+*/
+
 import (
         "database/sql"
 	_ "github.com/lib/pq"
@@ -9,6 +27,7 @@ import (
 )
 
 var db *sql.DB
+
 
 func setupDatabase( pgPassword string ) { // todo pass in hostname, port, username
         var err error
