@@ -18,6 +18,17 @@ func setupDatabase( pgPassword string ) {
 		log.Fatal(err)
 	}
 
+	sqlSetup := `
+        CREATE TABLE IF NOT EXISTS keys ( kID BIGINT NOT NULL, kVal bytea NOT NULL ,  oID BIGINT NOT NULL, PRIMARY KEY( kID ) );
+        CREATE TABLE IF NOT EXISTS keyUsers ( kID BIGINT NOT NULL, uID BIGINT NOT NULL , PRIMARY KEY( kID,uID ) );
+        CREATE TABLE IF NOT EXISTS keyAdmins ( kID BIGINT NOT NULL, uID BIGINT NOT NULL , PRIMARY KEY( kID,uID ) );
+        `
+        _, err = db.Exec(sqlSetup)
+        if err != nil {
+                log.Println("sql fatal error in setupDatabase")
+                log.Printf("%q\n", err)
+        }
+
 	log.Printf("Setup Database\n")
 }
 
