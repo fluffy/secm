@@ -2,7 +2,6 @@ package main
 
 /*
 TODO
-deal with no values found 
 set up webserver
 create new keys
 add user for key 
@@ -22,10 +21,14 @@ import (
 	_ "github.com/lib/pq"
         "log"
 	"os"
+	 "html/template"
+	 "net/http"
+
 )
 
 var db *sql.DB
 
+var templates = template.Must(template.ParseFiles("index.html"))
 
 func setupDatabase( hostName string, pgPassword string ) { // todo pass in hostname, port, username
         var err error
@@ -48,11 +51,6 @@ func setupDatabase( hostName string, pgPassword string ) { // todo pass in hostn
                 log.Printf("%q\n", err)
         }
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-	
 	log.Printf("Setup Database\n")
 }
 
@@ -81,6 +79,23 @@ func getKey( keyID, userID int64 ) (string) {
 }
 
 
+func mainHandler(w http.ResponseWriter, r *http.Request) {
+        if r.URL.Path != "/" {
+                http.NotFound(w, r)
+                return
+        }
+
+        type PageData struct {
+                Junk string
+        }
+        data := PageData{Junk: "nothing"}
+        err := templates.ExecuteTemplate(w, "index.html", data)
+        if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+        }
+}
+
+
 func main() {
 	var err error
 	
@@ -94,6 +109,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
-	getKey( 101, 1 )
+
+	http.HandleFunc("/", mainHandler)
+
+        http.ListenAndServe(":8080", nil)
 }
