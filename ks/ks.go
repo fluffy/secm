@@ -25,11 +25,15 @@ import (
 	"io"
 	"strings"
 	"strconv"
+	"math/rand"
+	"time"
 )
 
 var db *sql.DB
 
 var templates = template.Must(template.ParseFiles("index.html"))
+
+var nonCryptoRand = rand.New( rand.NewSource( time.Now().UTC().UnixNano() ) )
 
 
 func setupDatabase( hostName string, pgPassword string ) { // todo pass in hostname, port, username
@@ -82,7 +86,7 @@ func getKey( keyID int64, userID int64 ) (string) {
 
 
 func createKey(  userID int64, keyVal string ) (int64) {
-	var keyID int64 = 108; // TODO - random
+	var keyID int64 = nonCryptoRand.Int63();
 	
 	// note if using mySQL use ? but Postgres is $1 in prepare statements
 	//var stmt [3]*sql.Stmt;
