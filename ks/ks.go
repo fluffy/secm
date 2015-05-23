@@ -57,7 +57,7 @@ func setupDatabase( hostName string, pgPassword string ) { // todo pass in hostn
 }
 
 
-func getKey( keyID, userID int64 ) (string) {
+func getKey( keyID int64, userID int64 ) (string) {
 	// note if using mySQL use ? but Postgres is $1 in prepare statements 
 	stmt, err := db.Prepare(
 		"SELECT keys.kVal  FROM keyUsers JOIN keys ON  keys.kID = keyUsers.kID WHERE keyUsers.uID = $2 AND keyUsers.kID = $1")
@@ -78,6 +78,13 @@ func getKey( keyID, userID int64 ) (string) {
 		return keyVal;
 	}
 	return ""; 
+}
+
+
+func createKey(  userID int64, keyVal string ) (int64) {
+	var keyID int64 = 104;
+
+	return keyID;
 }
 
 
@@ -123,7 +130,7 @@ func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("GET keyID=", keyID, " userID=",userID )
-	
+
 	io.WriteString(w, getKey(keyID,userID) )
 }
 
@@ -143,10 +150,14 @@ func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	var keyVal string = r.FormValue("keyVal");
 	var userID int64 = 1;
-	var keyID int64 = 104;
-	
+
+	var keyID int64 = createKey( userID, keyVal );
+
 	log.Println("POST keyID=", keyID, "userID=",userID, "keyVal=",keyVal )
-	// TODO - save to DB 
+
+	io.WriteString(w, "{ keyID: " )
+	io.WriteString(w, strconv.FormatInt(keyID,10) )
+	io.WriteString(w, " }" )
 }
 
 
