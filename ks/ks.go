@@ -21,7 +21,6 @@ import (
         "database/sql"
 	_ "github.com/lib/pq"
         "log"
-	"fmt"
 	"os"
 )
 
@@ -58,7 +57,7 @@ func setupDatabase( hostName string, pgPassword string ) { // todo pass in hostn
 }
 
 
-func getKey( keyID, userID int64 ) {
+func getKey( keyID, userID int64 ) (string) {
 	// note if using mySQL use ? but Postgres is $1 in prepare statements 
 	stmt, err := db.Prepare(
 		"SELECT keys.kVal  FROM keyUsers JOIN keys ON  keys.kID = keyUsers.kID WHERE keyUsers.uID = $2 AND keyUsers.kID = $1")
@@ -75,8 +74,10 @@ func getKey( keyID, userID int64 ) {
 		log.Println("sql fatal error in getKey querry")
 		log.Fatal(err)
 	default:
-		fmt.Println(keyVal)
+		log.Println("got key " + keyVal)
+		return keyVal;
 	}
+	return ""; 
 }
 
 
@@ -94,5 +95,5 @@ func main() {
 		log.Fatal(err)
 	}
 	
-	getKey( 101, 2 )
+	getKey( 101, 1 )
 }
