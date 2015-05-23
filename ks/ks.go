@@ -2,7 +2,6 @@ package main
 
 /*
 TODO
-pass in host on CLI
 deal with no values found 
 set up webserver
 create new keys
@@ -69,11 +68,15 @@ func getKey( keyID, userID int64 ) {
 	}
 	var keyVal string
 	err = stmt.QueryRow(keyID,userID).Scan( &keyVal ) 
-	if err != nil {
+	switch {
+	case err == sql.ErrNoRows:
+            log.Printf("no key found")
+	case err != nil:
 		log.Println("sql fatal error in getKey querry")
 		log.Fatal(err)
+	default:
+		fmt.Println(keyVal)
 	}
-	fmt.Println(keyVal)
 }
 
 
@@ -91,5 +94,5 @@ func main() {
 		log.Fatal(err)
 	}
 	
-	getKey( 101, 1 )
+	getKey( 101, 2 )
 }
