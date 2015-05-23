@@ -4,7 +4,7 @@
 Info for docker on rackspace at
 https://developer.rackspace.com/blog/using-docker-machine-to-deploy-your-docker-containers-on-rackspace/
 
-Install Docker Machine (see )
+Install Docker Machine (see)
 https://github.com/docker/machine/releases
 
 
