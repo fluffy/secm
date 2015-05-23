@@ -18,7 +18,8 @@ func setupDatabase( pgPassword string ) { // todo pass in hostname, port, userna
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
+	// a postgess bigint is signed 64 bit int 
 	sqlSetup := `
         CREATE TABLE IF NOT EXISTS keys ( kID BIGINT NOT NULL, kVal bytea NOT NULL ,  oID BIGINT NOT NULL, PRIMARY KEY( kID ) );
         CREATE TABLE IF NOT EXISTS keyUsers ( kID BIGINT NOT NULL, uID BIGINT NOT NULL , PRIMARY KEY( kID,uID ) );
@@ -39,7 +40,7 @@ func setupDatabase( pgPassword string ) { // todo pass in hostname, port, userna
 }
 
 
-func getKey( keyID, userID string ) {
+func getKey( keyID, userID int64 ) {
 	stmt, err := db.Prepare(
 		"SELECT keys.kVal  FROM keyUsers JOIN keys ON  keys.kID = keyUsers.kID WHERE keyUsers.uID = $2 AND keyUsers.kID = $1")
 	if err != nil {
