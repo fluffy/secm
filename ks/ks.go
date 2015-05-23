@@ -82,8 +82,40 @@ func getKey( keyID int64, userID int64 ) (string) {
 
 
 func createKey(  userID int64, keyVal string ) (int64) {
-	var keyID int64 = 104;
+	var keyID int64 = 108; // TODO - random
+	
+	// note if using mySQL use ? but Postgres is $1 in prepare statements
+	//var stmt [3]*sql.Stmt;
+	var err error;
 
+	var stmt [3]*sql.Stmt;
+	var cmd  [3]string = [3]string{"INSERT INTO keys (kID, kVal, oID) VALUES ($1, $2::bytea,$3)",
+		"INSERT INTO keyUsers (kID,uID) VALUES ($1,$2)",
+		"INSERT INTO keyAdmins (kID,uID) VALUES ($1,$2);" }
+
+
+	
+	for i := range cmd {	
+		stmt[i], err = db.Prepare( cmd[i] )
+		if err != nil {
+			log.Println("sql fatal error in createKey prep for", cmd[i])
+			log.Fatal(err)
+		}
+	}
+
+	for i := range cmd {
+		if i == 0 {
+			_,err = stmt[i].Exec(keyID,keyVal,userID)
+		} else {
+			_,err = stmt[i].Exec(keyID,userID)
+		}
+		
+		if err != nil {
+			log.Println("sql error in createKey",err)
+			return 0;
+		}
+	}
+	
 	return keyID;
 }
 
