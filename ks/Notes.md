@@ -1,4 +1,9 @@
 
+start things up 
+createMachine.sh test7
+Remember to delete server at https://mycloud.rackspace.com
+
+go run ks.go `docker-machine ip test7` 
 
 Setting up GO
 go get github.com/lib/pq
@@ -45,8 +50,11 @@ docker-machine ip test3
 docker `docker-machine config test3` run -it --link my-postgres:postgres --rm postgres sh -c 'PGPASSWORD='$SECM_DB_SECRET' exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres -w '
 
 # or my local mac
-setenv POSTGRES_PASSWORD $SECM_DB_SECRET
-/Library/PostgreSQL/9.1/bin/psql -h `docker-machine ip test3` -p 5432 -U postgres
+setenv PGPASSWORD  $SECM_DB_SECRET
+/Library/PostgreSQL/9.1/bin/psql -h `docker-machine ip test7` -p 5432 -U postgres
+
+
+/Library/PostgreSQL/9.1/bin/pg_dump -h `docker-machine ip test7` -p 5432 -U postgres -w postgres
 
 
 

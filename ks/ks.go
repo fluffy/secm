@@ -29,11 +29,11 @@ import (
 var db *sql.DB
 
 
-func setupDatabase( pgPassword string ) { // todo pass in hostname, port, username
+func setupDatabase( hostName string, pgPassword string ) { // todo pass in hostname, port, username
         var err error
 
         // set up DB
-        db, err = sql.Open("postgres", "password='"+pgPassword+"' user=postgres dbname=postgres host=162.209.75.246 port=5432 sslmode=disable")
+        db, err = sql.Open("postgres", "password='"+pgPassword+"' user=postgres dbname=postgres host="+hostName+" port=5432 sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,7 +81,9 @@ func main() {
 	var err error
 	
 	var pgPassword string = os.Getenv("SECM_DB_SECRET")
-	setupDatabase(pgPassword)
+	var hostName string = os.Args[1]
+	
+	setupDatabase(hostName,pgPassword)
         defer db.Close()
 
 	err = db.Ping()
