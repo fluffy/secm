@@ -21,3 +21,12 @@ if [ -z "$OS_REGION_NAME" ]; then
 fi
 
 
+# flavor  can be found at http://docs.rackspace.com/cas/api/v1.0/autoscale-devguide/content/server-flavors.html
+docker-machine create --driver rackspace --rackspace-flavor-id 2   test3
+
+# TODO - remove public port 
+docker `docker-machine config test3` run -p 5432:5432 --name my-postgres -e POSTGRES_PASSWORD=$SECM_DB_SECRET -d postgres 
+
+
+
+
