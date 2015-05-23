@@ -69,5 +69,5 @@ func main() {
 		log.Fatal(err)
 	}
 	
-	getKey( "101", "1" )
+	getKey( 101, 1 )
 }
