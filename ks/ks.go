@@ -22,13 +22,16 @@ import (
         "log"
 	"os"
 	 "html/template"
-	 "net/http"
-
+	"net/http"
+	"io"
+	"strings"
+	"strconv"
 )
 
 var db *sql.DB
 
 var templates = template.Must(template.ParseFiles("index.html"))
+
 
 func setupDatabase( hostName string, pgPassword string ) { // todo pass in hostname, port, username
         var err error
@@ -96,6 +99,36 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	log.Println("got URL path " + r.URL.Path )
+
+	elements := strings.Split( r.URL.Path  , "/" );
+	// note since the URL starts with a /, we get an empty element as first thing in array
+	
+	if len(elements) != 4  {
+		http.NotFound(w, r)
+                return
+	}
+	
+	var keyID int64 = 0;
+	var userID int64 = 1;
+
+	keyID,err = strconv.ParseInt( elements[3] , 0, 64 );
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	log.Println("GET keyID=", keyID, " userID=",userID )
+	
+	io.WriteString(w, getKey(keyID,userID) )
+}
+
+
 func main() {
 	var err error
 	
@@ -111,6 +144,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", mainHandler)
+	http.HandleFunc("/v1/key/", searchKeyHandler)
 
         http.ListenAndServe(":8080", nil)
 }
