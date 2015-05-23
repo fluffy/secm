@@ -34,7 +34,8 @@ docker-machine create --driver rackspace --rackspace-flavor-id 2 "$MAC_NAME"
 # TODO - remove public port 
 docker `docker-machine config $MAC_NAME` run -p 5432:5432 --name my-postgres -e POSTGRES_PASSWORD=$SECM_DB_SECRET -d postgres 
 
-echo 
+echo
+echo Machine IP is `docker-machine ip $MAC_NAME`
 echo Remember to delete server at https://mycloud.rackspace.com
 
 

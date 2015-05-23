@@ -1,5 +1,10 @@
 
 
+Setting up GO
+go get github.com/lib/pq
+
+go run ks.go
+
 
 Info for docker on rackspace at
 https://developer.rackspace.com/blog/using-docker-machine-to-deploy-your-docker-containers-on-rackspace/
