@@ -1,2 +1,4 @@
 # secm
-Secure Messaging 
+
+Ignore this ... not ready for public yet 
+
