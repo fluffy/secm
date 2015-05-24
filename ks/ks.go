@@ -148,6 +148,11 @@ func addRole(   keyID int64, userID int64, role string, roleID int64  ) (error) 
 }
 
 
+func getMeta( keyID int64, userID int64, meta string ) ([]int64,error) {
+	return []int64{0,0,0},nil
+}
+
+
 func mainHandler(w http.ResponseWriter, r *http.Request) {
         if r.URL.Path != "/" {
                 http.NotFound(w, r)
@@ -210,7 +215,6 @@ func addRoleHandler(w http.ResponseWriter, r *http.Request) {
 	
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-
 	var keyID int64 = 0;
 	var userID int64 = 1;
 	var roleID int64 = 0;
@@ -252,6 +256,8 @@ func getKeyMetaHandler (w http.ResponseWriter, r *http.Request) {
 	
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	var userID int64 = 1;
+	
 	var keyID int64 = 0;
 		keyID,err = strconv.ParseInt(  vars["keyID"] , 0, 64 );
 	if err != nil {
@@ -261,20 +267,26 @@ func getKeyMetaHandler (w http.ResponseWriter, r *http.Request) {
 
 	var meta string = vars["meta"];
 
-	var vals []int64 = { 0 , 0 } // todo remove 
+	var vals []int64
+	var idName string
 	
 	switch {
 	case meta == "owner" :
+		idName = "ownerIDs"
 	case meta == "admins" :
+		idName = "adminIDs"
 	case meta == "users" :
+		idName = "userIDs"
 	default:
 		http.NotFound(w, r)
 		return
 	}
 	
-	log.Println("GET meta: keyID=", keyID, "meta=" , meta )
+	log.Println("GET meta: keyID=", keyID, "userID=", userID, "meta=" , meta )
 
-	io.WriteString(w, "{ \"ID\": [ " )
+	vals,err = getMeta( keyID, userID, meta )
+
+	io.WriteString(w, "{ \"" +idName + "\": [ " )
 	for i := range vals {
 		if i != 0 {
 			io.WriteString(w, "," )
