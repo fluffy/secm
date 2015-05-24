@@ -3,6 +3,7 @@ package main
 /*
 TODO
 move all prepares statements to DB setup time
+defer stmt.Close() for all statements
 front end with appache
 appache user auth 
 dockerize 
@@ -149,7 +150,53 @@ func addRole(   keyID int64, userID int64, role string, roleID int64  ) (error) 
 
 
 func getMeta( keyID int64, userID int64, meta string ) ([]int64,error) {
-	return []int64{0,0,0},nil
+
+	var cmd string
+
+	switch {
+	case meta == "owner":
+		cmd = "SELECT keys.oID FROM keys JOIN  keyUsers ON keys.kID = keyUsers.kID WHERE keys.kID = $1 AND keyUsers.uID = $2"
+	case meta == "admins":
+		cmd = "SELECT keyAdmins.uID FROM keyAdmins JOIN keyUsers ON keyAdmins.kID = keyUsers.kID WHERE keyUsers.kID = $1 AND keyUsers.uID = $2"
+	case meta == "users":
+		cmd = "SELECT users.uID FROM keyUsers AS users JOIN keyUsers AS perm ON users.kID = perm.kID WHERE perm.kID = $1 AND perm.uID = $2"
+	default:
+		return []int64{}, errors.New("bad meta");
+	}
+
+	// note if using mySQL use ? but Postgres is $1 in prepare statements 
+	stmt, err := db.Prepare( cmd )
+	if err != nil {
+		log.Println("sql fatal error in getMeta prep meta=",meta)
+		log.Fatal(err)
+	}
+
+	rows,err := stmt.Query(keyID,userID)
+	switch {
+	case err == sql.ErrNoRows:
+		log.Printf("no data found") // key probably does not exist for this to happen 
+	case err != nil:
+		log.Println("sql fatal error in getMeta querry")
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var ret []int64 = []int64{}
+	
+	for rows.Next() {
+		var uID int64
+		err := rows.Scan(&uID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println( "got id =", uID )
+		ret = append( ret, uID )
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	
+	return ret,nil
 }
 
 
