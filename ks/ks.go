@@ -22,10 +22,10 @@ import (
 	 "html/template"
 	"net/http"
 	"io"
-	"strings"
 	"strconv"
 	"math/rand"
 	"time"
+	"github.com/gorilla/mux"
 )
 
 var db *sql.DB
@@ -35,7 +35,7 @@ var templates = template.Must(template.ParseFiles("index.html"))
 var nonCryptoRand = rand.New( rand.NewSource( time.Now().UTC().UnixNano() ) )
 
 
-func setupDatabase( hostName string, pgPassword string ) { // todo pass in hostname, port, username
+func setupDatabase( hostName string, pgPassword string ) { // TODO pass in port, username
         var err error
 
         // set up DB
@@ -138,19 +138,12 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
         w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
 
-	elements := strings.Split( r.URL.Path  , "/" );
-	// note since the URL starts with a /, we get an empty element as first thing in array
-	
-	if len(elements) != 4  {
-		http.NotFound(w, r)
-                return
-	}
-	
 	var keyID int64 = 0;
 	var userID int64 = 1;
 
-	keyID,err = strconv.ParseInt( elements[3] , 0, 64 );
+	keyID,err = strconv.ParseInt(  vars["keyID"] , 0, 64 );
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -165,11 +158,6 @@ func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 func createKeyHandler(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Access-Control-Allow-Origin", "*")
         
-        if r.Method != "POST" {
-                http.Error(w, "method must be POST", http.StatusMethodNotAllowed)
-                return
-        }
-
 	err := r.ParseForm()
         if err != nil {
                 http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -182,15 +170,14 @@ func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("POST keyID=", keyID, "userID=",userID )
 
-	io.WriteString(w, "{ \"keyID\": " )
-	io.WriteString(w, strconv.FormatInt(keyID,10) )
-	io.WriteString(w, " }" )
+	io.WriteString(w, "{ \"keyID\": " + strconv.FormatInt(keyID,10) +" }" )
 }
 
 
 func main() {
 	var err error
 
+	// get all the configuration data 
 	if len( os.Args ) != 2 {
 		log.Fatal( "must pass database hostname on CLI" );	
 	}
@@ -200,18 +187,24 @@ func main() {
 	if len( pgPassword ) < 1 {
 		log.Fatal( "must set environ variable SECM_DB_SECRET" );	
 	}
-	
+
+	// set up the DB 
 	setupDatabase(hostName,pgPassword)
         defer db.Close()
 
+	// Check DB is alive 
 	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/", mainHandler)
-	http.HandleFunc("/v1/key/", searchKeyHandler)
-	http.HandleFunc("/v1/key", createKeyHandler)
+	// set up the routes 
+	router := mux.NewRouter()
+	router.HandleFunc("/", mainHandler).Methods("GET")
+	router.HandleFunc("/v1/key/{keyID}", searchKeyHandler).Methods("GET")
+	router.HandleFunc("/v1/key", createKeyHandler).Methods("POST")
+	http.Handle("/", router)
 
+	// run the web server 
         http.ListenAndServe(":8080", nil)
 }

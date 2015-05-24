@@ -7,6 +7,7 @@ go run ks.go `docker-machine ip test7`
 
 Setting up GO
 go get github.com/lib/pq
+go get github.com/gorilla/mux
 
 go run ks.go
 
