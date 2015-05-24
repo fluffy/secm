@@ -2,7 +2,6 @@ package main
 
 /*
 TODO
-create new keys
 add user for key 
 add admin for key 
 front end with appache
@@ -78,7 +77,6 @@ func getKey( keyID int64, userID int64 ) (string) {
 		log.Println("sql fatal error in getKey querry")
 		log.Fatal(err)
 	default:
-		log.Println("got key " + keyVal)
 		return keyVal;
 	}
 	return ""; 
@@ -87,18 +85,14 @@ func getKey( keyID int64, userID int64 ) (string) {
 
 func createKey(  userID int64, keyVal string ) (int64) {
 	var keyID int64 = nonCryptoRand.Int63();
-	
-	// note if using mySQL use ? but Postgres is $1 in prepare statements
-	//var stmt [3]*sql.Stmt;
 	var err error;
 
 	var stmt [3]*sql.Stmt;
 	var cmd  [3]string = [3]string{"INSERT INTO keys (kID, kVal, oID) VALUES ($1, $2::bytea,$3)",
 		"INSERT INTO keyUsers (kID,uID) VALUES ($1,$2)",
 		"INSERT INTO keyAdmins (kID,uID) VALUES ($1,$2);" }
+	// note if using mySQL use ? but Postgres is $1 in prepare statements
 
-
-	
 	for i := range cmd {	
 		stmt[i], err = db.Prepare( cmd[i] )
 		if err != nil {
@@ -143,10 +137,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 
 func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
-	
         w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	log.Println("got URL path " + r.URL.Path )
 
 	elements := strings.Split( r.URL.Path  , "/" );
 	// note since the URL starts with a /, we get an empty element as first thing in array
@@ -189,9 +180,9 @@ func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	var keyID int64 = createKey( userID, keyVal );
 
-	log.Println("POST keyID=", keyID, "userID=",userID, "keyVal=",keyVal )
+	log.Println("POST keyID=", keyID, "userID=",userID )
 
-	io.WriteString(w, "{ keyID: " )
+	io.WriteString(w, "{ \"keyID\": " )
 	io.WriteString(w, strconv.FormatInt(keyID,10) )
 	io.WriteString(w, " }" )
 }
@@ -199,9 +190,16 @@ func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var err error
+
+	if len( os.Args ) != 2 {
+		log.Fatal( "must pass database hostname on CLI" );	
+	}
+	var hostName string = os.Args[1]
 	
 	var pgPassword string = os.Getenv("SECM_DB_SECRET")
-	var hostName string = os.Args[1]
+	if len( pgPassword ) < 1 {
+		log.Fatal( "must set environ variable SECM_DB_SECRET" );	
+	}
 	
 	setupDatabase(hostName,pgPassword)
         defer db.Close()
