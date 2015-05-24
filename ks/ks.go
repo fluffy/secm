@@ -189,7 +189,6 @@ func getMeta( keyID int64, userID int64, meta string ) ([]int64,error) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println( "got id =", uID )
 		ret = append( ret, uID )
 	}
 	if err = rows.Err(); err != nil {
