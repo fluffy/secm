@@ -6,6 +6,7 @@ move all prepares statements to DB setup time
 defer stmt.Close() for all statements
 front end with appache
 appache user auth 
+correctly set userID
 dockerize 
 api doc
 figure out way to load secrets 
@@ -351,7 +352,6 @@ func main() {
 		log.Fatal( "must pass database hostname on CLI" );	
 	}
 	var hostName string = os.Args[1]
-	
 	var pgPassword string = os.Getenv("SECM_DB_SECRET")
 	if len( pgPassword ) < 1 {
 		log.Fatal( "must set environ variable SECM_DB_SECRET" );	
