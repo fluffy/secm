@@ -341,9 +341,9 @@ func main() {
 		log.Fatal("must pass database hostname on CLI")
 	}
 	var hostName string = os.Args[1]
-	var pgPassword string = os.Getenv("SECM_DB_SECRET")
+	var pgPassword string = os.Getenv("DB_ENV_POSTGRES_PASSWORD")
 	if len(pgPassword) < 1 {
-		log.Fatal("must set environ variable SECM_DB_SECRET")
+		log.Fatal("must set environ variable DB_ENV_POSTGRES_PASSWORD")
 	}
 
 	// set up the DB

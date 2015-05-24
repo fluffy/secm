@@ -20,12 +20,9 @@ WORKDIR /usr/local/secm/ks
 
 RUN go build ks.go
 
-#ADD ks.go
-#RUN go build ks.go
+EXPOSE 8080
 
-#EXPOSE 8080
-
-#CMD ["ks","postgres"]
+CMD ["ks","$DB_PORT_5432_TCP_ADDR"]
 
 
 
