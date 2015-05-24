@@ -26,6 +26,7 @@ import (
 	"math/rand"
 	"time"
 	"github.com/gorilla/mux"
+	"errors"
 )
 
 var db *sql.DB
@@ -118,6 +119,36 @@ func createKey(  userID int64, keyVal string ) (int64) {
 }
 
 
+func addRole(   keyID int64, userID int64, role string, roleID int64  ) (error) {
+	var err error;
+	var stmt *sql.Stmt;
+	var cmd string
+
+	switch {
+	case role=="user":
+		cmd = "INSERT INTO keyUsers  (kID,uID) SELECT kID,$3 FROM keyAdmins WHERE keyAdmins.kID = $1 AND keyAdmins.uID = $2;"
+	case role=="admin":
+		cmd = "INSERT INTO keyAdmins (kID,uID) SELECT kID,$3 FROM keys      WHERE keys.kID = $1 AND keys.oID = $2"
+	default:
+		return errors.New("bad role");
+	}
+	
+	stmt, err = db.Prepare( cmd )
+	if err != nil {
+		log.Println("sql fatal error in createKey prep for", cmd )
+		log.Fatal(err)
+	}
+
+	_,err = stmt.Exec(keyID,userID,roleID)
+	if err != nil {
+		log.Println("sql error in addRole",err)
+		return err;
+	}
+	
+	return nil;
+}
+
+
 func mainHandler(w http.ResponseWriter, r *http.Request) {
         if r.URL.Path != "/" {
                 http.NotFound(w, r)
@@ -149,7 +180,7 @@ func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("GET keyID=", keyID, " userID=",userID )
+	log.Println("GET key: keyID=", keyID, " userID=",userID )
 
 	io.WriteString(w, getKey(keyID,userID) )
 }
@@ -168,7 +199,7 @@ func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	var keyID int64 = createKey( userID, keyVal );
 
-	log.Println("POST keyID=", keyID, "userID=",userID )
+	log.Println("POST createKey: keyID=", keyID, "userID=",userID )
 
 	io.WriteString(w, "{ \"keyID\": " + strconv.FormatInt(keyID,10) +" }" )
 }
@@ -207,9 +238,12 @@ func addRoleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	log.Println("POST keyID=", keyID, " userID=",userID , "roleID=", roleID , "role=" , role )
+	log.Println("POST addRole: keyID=", keyID, " userID=",userID , "roleID=", roleID , "role=" , role )
 
-	
+	err = addRole( keyID, userID, role, roleID )
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 
