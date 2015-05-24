@@ -125,3 +125,12 @@ INSERT INTO keyUsers (kID,uID) SELECT kID,3  FROM keyAdmins WHERE keyAdmins.kID 
 # if uid 1 is an owner for key 101, then add 3 as a admin of this key 
 INSERT INTO keyAdmins (kID,uID) SELECT kID,3  FROM keys WHERE keys.kID = 101 AND keys.oID = 1;
 
+
+# if uid 3 is a user of key 100, then return who the owner or that key is 
+SELECT keys.oID FROM keys JOIN  keyUsers ON keys.kID = keyUsers.kID WHERE keys.kID = 100 AND keyUsers.uID = 3  ;
+
+# if uid 2 is a user of key 100, then return all the admins of that key 
+SELECT keyAdmins.uID FROM keyAdmins JOIN keyUsers ON keyAdmins.kID = keyUsers.kID WHERE keyUsers.kID = 100 AND keyUsers.uID = 2  ;
+
+# if uid 2 is a uer of key 100, then return all the users of that key 
+SELECT users.uID FROM keyUsers AS users JOIN keyUsers AS perm ON users.kID = perm.kID WHERE perm.kID = 100 AND perm.uID = 2  ;
