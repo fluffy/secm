@@ -2,8 +2,7 @@ package main
 
 /*
 TODO
-add user for key 
-add admin for key 
+move all prepares statements to DB setup time
 front end with appache
 appache user auth 
 dockerize 
@@ -126,9 +125,9 @@ func addRole(   keyID int64, userID int64, role string, roleID int64  ) (error) 
 
 	switch {
 	case role=="user":
-		cmd = "INSERT INTO keyUsers  (kID,uID) SELECT kID,$3 FROM keyAdmins WHERE keyAdmins.kID = $1 AND keyAdmins.uID = $2;"
+		cmd = "INSERT INTO keyUsers (kID,uID) SELECT kID,$3 FROM keyAdmins WHERE keyAdmins.kID = $1 AND keyAdmins.uID = $2"
 	case role=="admin":
-		cmd = "INSERT INTO keyAdmins (kID,uID) SELECT kID,$3 FROM keys      WHERE keys.kID = $1 AND keys.oID = $2"
+		cmd = "INSERT INTO keyAdmins (kID,uID) SELECT kID,$3 FROM keys WHERE keys.kID = $1 AND keys.oID = $2"
 	default:
 		return errors.New("bad role");
 	}
@@ -247,6 +246,45 @@ func addRoleHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func getKeyMetaHandler (w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	var err error
+	
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var keyID int64 = 0;
+		keyID,err = strconv.ParseInt(  vars["keyID"] , 0, 64 );
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	var meta string = vars["meta"];
+
+	var vals []int64 = { 0 , 0 } // todo remove 
+	
+	switch {
+	case meta == "owner" :
+	case meta == "admins" :
+	case meta == "users" :
+	default:
+		http.NotFound(w, r)
+		return
+	}
+	
+	log.Println("GET meta: keyID=", keyID, "meta=" , meta )
+
+	io.WriteString(w, "{ \"ID\": [ " )
+	for i := range vals {
+		if i != 0 {
+			io.WriteString(w, "," )
+		}
+		io.WriteString(w, strconv.FormatInt( vals[i], 10) )
+	}
+	io.WriteString(w, " ] }" )
+}
+
+
 func main() {
 	var err error
 
@@ -277,7 +315,7 @@ func main() {
 	router.HandleFunc("/v1/key", createKeyHandler).Methods("POST")
 	router.HandleFunc("/v1/key/{keyID}", searchKeyHandler).Methods("GET")
 	router.HandleFunc("/v1/key/{keyID}/{role}/{roleID}", addRoleHandler).Methods("POST") // role is user | admin 
-	//router.HandleFunc("/v1/key/{keyID}/{meta}", getKeyMetaHandler).Methods("GET") // meta is ownwer | users | admins 
+	router.HandleFunc("/v1/key/{keyID}/{meta}", getKeyMetaHandler).Methods("GET") // meta is ownwer | users | admins 
 	http.Handle("/", router)
 
 	// run the web server 
