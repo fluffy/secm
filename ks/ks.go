@@ -174,6 +174,45 @@ func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func addRoleHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	var err error
+	
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+
+	var keyID int64 = 0;
+	var userID int64 = 1;
+	var roleID int64 = 0;
+	
+	keyID,err = strconv.ParseInt(  vars["keyID"] , 0, 64 );
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	roleID,err = strconv.ParseInt(  vars["roleID"] , 0, 64 );
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	var role string = vars["role"];
+
+	switch {
+	case role == "admin" :
+	case role == "user" :
+	default:
+		http.NotFound(w, r)
+		return
+	}
+	
+	log.Println("POST keyID=", keyID, " userID=",userID , "roleID=", roleID , "role=" , role )
+
+	
+}
+
+
 func main() {
 	var err error
 
@@ -201,8 +240,10 @@ func main() {
 	// set up the routes 
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
-	router.HandleFunc("/v1/key/{keyID}", searchKeyHandler).Methods("GET")
 	router.HandleFunc("/v1/key", createKeyHandler).Methods("POST")
+	router.HandleFunc("/v1/key/{keyID}", searchKeyHandler).Methods("GET")
+	router.HandleFunc("/v1/key/{keyID}/{role}/{roleID}", addRoleHandler).Methods("POST") // role is user | admin 
+	//router.HandleFunc("/v1/key/{keyID}/{meta}", getKeyMetaHandler).Methods("GET") // meta is ownwer | users | admins 
 	http.Handle("/", router)
 
 	// run the web server 
