@@ -15,14 +15,17 @@ RUN go get github.com/gorilla/mux
 
 WORKDIR /usr/local/ 
 
-RUN git clone https://github.com/fluffy/secm.git
-WORKDIR /usr/local/secm/ks
+#RUN git clone https://github.com/fluffy/secm.git
+COPY . /usr/local/ks
+
+WORKDIR /usr/local/ks
 
 RUN go build ks.go
 
 EXPOSE 8080
 
-CMD ["ks","$DB_PORT_5432_TCP_ADDR"]
+# the IP of the DB link gets put as a host in /etc/hosts with name db
+CMD ["./ks","db"]
 
 
 
