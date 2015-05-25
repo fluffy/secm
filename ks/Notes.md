@@ -134,3 +134,29 @@ SELECT keyAdmins.uID FROM keyAdmins JOIN keyUsers ON keyAdmins.kID = keyUsers.kI
 
 # if uid 2 is a uer of key 100, then return all the users of that key 
 SELECT users.uID FROM keyUsers AS users JOIN keyUsers AS perm ON users.kID = perm.kID WHERE perm.kID = 100 AND perm.uID = 2  ;
+
+
+
+building mod_auth_openidc
+
+sudo apt-get install autotools-dev
+sudo apt-get install autoconf
+sudo apt-get install apache-dev
+sudo apt-get install apache2-dev
+sudo apt-get install curl
+sudo apt-get install jansson
+sudo apt-get install pcre3
+sudo apt-get install libcurl
+sudo apt-get install curl libc6 libcurl3 zlib1g
+sudo apt-get install libjansson-dev
+sudo apt-get install libpcre3 libpcre3-dev
+sudo apt-get install pkgconfig
+sudo apt-get install pkg-config
+sudo apt-get install redis
+sudo apt-get install hiredis
+sudo apt-get install libcurl4-openssl-dev
+
+./configure
+
+make
+sudo make install 
