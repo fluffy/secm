@@ -28,8 +28,7 @@ RUN make install
 RUN apt-get install -y openssh-server supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-MKDIR /data
-WORKDIR /data
+RUN mkdir /data
 RUN cp /etc/apache2/sites-available/000-default.conf /data/site.conf
 RUN touch /data/site.cert
 RUN touch /data/site-chain.cert
