@@ -160,3 +160,33 @@ sudo apt-get install libcurl4-openssl-dev
 
 make
 sudo make install 
+
+
+
+curl --data "keyVal=x2x" http://192.237.200.55:8080/v1/key
+
+curl http://192.237.200.55:8080/v1/key/7699388317967658784
+
+
+
+OIDC_CLAIM_sub: xxx
+OIDC_CLAIM_profile: https://plus.google.com/xxx
+OIDC_CLAIM_gender: male
+OIDC_CLAIM_family_name: xx
+OIDC_CLAIM_name: xx xx
+OIDC_CLAIM_given_name: xx
+OIDC_CLAIM_picture: https://lh4.googleusercontent.com/xxx/photo.jpg
+OIDC_CLAIM_email: xxx@gmail.com
+OIDC_CLAIM_email_verified: 1
+OIDC_CLAIM_iss: https://accounts.google.com
+OIDC_CLAIM_nonce: xxx
+OIDC_CLAIM_exp: 1432588106
+OIDC_CLAIM_iat: 1432584506
+OIDC_CLAIM_at_hash: xx
+OIDC_CLAIM_azp: xxx
+OIDC_CLAIM_aud: xxx
+OIDC_access_token: xxx
+OIDC_access_token_expires: 1432588107
+X-Forwarded-For: 10.1.3.233
+X-Forwarded-Host: ks.fluffy.im
+X-Forwarded-Server: ks.fluffy.im
