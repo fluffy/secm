@@ -38,6 +38,7 @@ RUN a2ensite site
 RUN a2dissite 000-default.conf
 RUN a2enmod proxy 
 RUN a2enmod proxy_http
-
+RUN a2enmod ssl
+        
 EXPOSE 22 80 443
 CMD ["/usr/bin/supervisord"]
