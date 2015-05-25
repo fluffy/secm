@@ -28,5 +28,17 @@ RUN make install
 RUN apt-get install -y openssh-server supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+MKDIR /data
+WORKDIR /data
+RUN cp /etc/apache2/sites-available/000-default.conf /data/site.conf
+RUN touch /data/site.cert
+RUN touch /data/site-chain.cert
+RUN touch /data/site.key
+RUN ln -s /data/site.conf /etc/apache2/sites-available/site.conf
+RUN a2ensite site
+RUN a2dissite 000-default.conf
+RUN a2enmod proxy 
+RUN a2enmod proxy_http
+
 EXPOSE 22 80 443
 CMD ["/usr/bin/supervisord"]
