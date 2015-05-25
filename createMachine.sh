@@ -46,6 +46,7 @@ docker `docker-machine config $MAC_NAME` run -p 80:80 -p 443:443 -p 8022:22  -v 
 
 docker-machine ssh $MAC_NAME mkdir /root/data
 cat site.crt | docker-machine ssh $MAC_NAME "cat > /root/data/site.crt"
+cat site-chain.crt | docker-machine ssh $MAC_NAME "cat > /root/data/site-chain.crt"
 cat site.key | docker-machine ssh $MAC_NAME "cat > /root/data/site.key"
 cat site.conf | \
     sed -e "s/SERVER_NAME/$SECM_KS_NAME/g" | \
