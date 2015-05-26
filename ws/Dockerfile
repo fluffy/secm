@@ -17,6 +17,8 @@ RUN apt-get install -y libcurl4-openssl-dev
 
 RUN apt-get install -y apache2
 
+RUN apt-get install -y tcsh
+
 WORKDIR /home
 RUN git clone https://github.com/pingidentity/mod_auth_openidc.git
 WORKDIR /home/mod_auth_openidc
