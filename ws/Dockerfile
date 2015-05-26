@@ -27,7 +27,7 @@ RUN ./configure
 RUN make
 RUN make install
 
-RUN apt-get install -y openssh-server supervisor
+RUN apt-get install -y supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN mkdir /var/lock/apache2
 RUN mkdir /var/run/sshd
