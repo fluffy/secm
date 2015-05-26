@@ -202,7 +202,7 @@ curl --header "OIDC_CLAIM_email: xxx@gmail" http://localhost:8080/
 
 
 
-curl --data "__5__" --header "OIDC_CLAIM_email: xxx@gmail" --header
+curl --data "keyVal=__5__" --header "OIDC_CLAIM_email: xxx@gmail" --header
 "OIDC_CLAIM_email_verified: 1" http://localhost:8080/v1/key
 
 curl --header "OIDC_CLAIM_email: xxx@gmail" --header "OIDC_CLAIM_email_verified:
