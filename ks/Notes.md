@@ -16,6 +16,12 @@ curl http://localhost:8080/v1/key/100
 curl --data "keyVal=fluffy&p=3" http://localhost:8080/v1/key
 
 
+curl --data "keyVal=__2__" http://ks.fluffy.im:8080/v1/key
+
+
+curl http://ks.fluffy.im:8080/v1/key/861802244120027882
+
+
 
 Info for docker on rackspace at
 https://developer.rackspace.com/blog/using-docker-machine-to-deploy-your-docker-containers-on-rackspace/
