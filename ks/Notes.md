@@ -196,3 +196,17 @@ OIDC_access_token_expires: 1432588107
 X-Forwarded-For: 10.1.3.233
 X-Forwarded-Host: ks.fluffy.im
 X-Forwarded-Server: ks.fluffy.im
+
+
+curl --header "OIDC_CLAIM_email: xxx@gmail" http://localhost:8080/
+
+
+
+curl --data "__5__" --header "OIDC_CLAIM_email: xxx@gmail" --header
+"OIDC_CLAIM_email_verified: 1" http://localhost:8080/v1/key
+
+curl --header "OIDC_CLAIM_email: xxx@gmail" --header "OIDC_CLAIM_email_verified:
+1" http://localhost:8080/v1/key/2991017719384258649
+
+
+

@@ -28,6 +28,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"crypto/sha1"
+	"encoding/binary"
 )
 
 var db *sql.DB
@@ -194,17 +196,54 @@ func getMeta(keyID int64, userID int64, meta string) ([]int64, error) {
 	return ret, nil
 }
 
+
+func getUserID(  r *http.Request ) (int64,error) {
+
+	var email string = r.Header.Get("OIDC_CLAIM_email")
+	if email == "" {
+		return 0, errors.New("bad authentication")
+	}
+	var verified string = r.Header.Get("OIDC_CLAIM_email_verified")
+	if verified != "1" {
+		return 0, errors.New("bad authentication")
+	}
+	
+	data := []byte(email)
+	hash := sha1.Sum(data)
+	id := binary.BigEndian.Uint64( hash[0:8] )
+	if id > 9223372036854775807 {
+		id = id-9223372036854775807
+	}
+	v := int64( id )
+	
+	return v,nil
+}
+
+
 func mainHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var userID int64
+	
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
 
+	var email string = r.Header.Get("Oidc_claim_email")
+	
 	type PageData struct {
-		Junk string
+		Email string
+		UserID int64
 	}
-	data := PageData{Junk: "nothing"}
-	err := templates.ExecuteTemplate(w, "index.html", data)
+
+	userID,err = getUserID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	
+	data := PageData{ Email: email, UserID:userID  }
+	err = templates.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -218,6 +257,12 @@ func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 	var keyID int64 = 0
 	var userID int64 = 1
 
+	userID,err = getUserID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	
 	keyID, err = strconv.ParseInt(vars["keyID"], 0, 64)
 	if err != nil {
 		http.NotFound(w, r)
@@ -226,7 +271,7 @@ func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("GET key: keyID=", keyID, " userID=", userID)
 
-	io.WriteString(w, getKey(keyID, userID))
+	io.WriteString(w, getKey(keyID, userID) )
 }
 
 func createKeyHandler(w http.ResponseWriter, r *http.Request) {
@@ -240,6 +285,12 @@ func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 	var keyVal string = r.FormValue("keyVal")
 	var userID int64 = 1
 
+	userID,err = getUserID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	
 	var keyID int64 = createKey(userID, keyVal)
 
 	log.Println("POST createKey: keyID=", keyID, "userID=", userID)
@@ -257,6 +308,12 @@ func addRoleHandler(w http.ResponseWriter, r *http.Request) {
 	var userID int64 = 1
 	var roleID int64 = 0
 
+	userID,err = getUserID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	
 	keyID, err = strconv.ParseInt(vars["keyID"], 0, 64)
 	if err != nil {
 		http.NotFound(w, r)
@@ -294,7 +351,12 @@ func getKeyMetaHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	var userID int64 = 1
-
+	userID,err = getUserID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	
 	var keyID int64 = 0
 	keyID, err = strconv.ParseInt(vars["keyID"], 0, 64)
 	if err != nil {
