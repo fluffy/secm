@@ -55,8 +55,7 @@ sleep 5
 # TODO - remove public port
 docker `docker-machine config $MAC_NAME` run -p 8080:8080  --name="my-ks" --link my-postgres:db -d fluffy/ks:v1
 sleep 5
-# TODO remove the ssh port 22
-docker `docker-machine config $MAC_NAME` run -p 80:80 -p 443:443 -p 8022:22  -v /root/data:/data --name="my-ws" --link my-ks:ks -d fluffy/ws:v1
+docker `docker-machine config $MAC_NAME` run -p 80:80 -p 443:443 -v /root/data:/data --name="my-ws" --link my-ks:ks -d fluffy/ws:v1
 sleep 5
 
 echo
