@@ -38,10 +38,10 @@ docker-machine ssh $MAC_NAME "docker build -t fluffy/ws:v1 /root/secm/ws"
 
 # set up the site specific data 
 docker-machine ssh $MAC_NAME mkdir /root/data
-cat site.crt | docker-machine ssh $MAC_NAME "cat > /root/data/site.crt"
-cat site-chain.crt | docker-machine ssh $MAC_NAME "cat > /root/data/site-chain.crt"
-cat site.key | docker-machine ssh $MAC_NAME "cat > /root/data/site.key"
-cat site.conf | \
+cat ws/site.crt | docker-machine ssh $MAC_NAME "cat > /root/data/site.crt"
+cat ws/site-chain.crt | docker-machine ssh $MAC_NAME "cat > /root/data/site-chain.crt"
+cat ws/site.key | docker-machine ssh $MAC_NAME "cat > /root/data/site.key"
+cat ws/site.conf | \
     sed -e "s/SERVER_NAME/$SECM_KS_NAME/g" | \
     sed -e "s/OIDC_Client_ID/$OIDC_Client_ID/g" | \
     sed -e "s/OIDC_Client_Secret/$OIDC_Client_Secret/g" | \
@@ -51,10 +51,13 @@ cat site.conf | \
 # start the varios machins
 # TODO - remove public port 
 docker `docker-machine config $MAC_NAME` run -p 5432:5432 --name my-postgres -e POSTGRES_PASSWORD=$SECM_DB_SECRET -d postgres
+sleep 5
 # TODO - remove public port
 docker `docker-machine config $MAC_NAME` run -p 8080:8080  --name="my-ks" --link my-postgres:db -d fluffy/ks:v1
+sleep 5
 # TODO remove the ssh port 22
 docker `docker-machine config $MAC_NAME` run -p 80:80 -p 443:443 -p 8022:22  -v /root/data:/data --name="my-ws" --link my-ks:ks -d fluffy/ws:v1
+sleep 5
 
 echo
 echo Machine IP is `docker-machine ip $MAC_NAME`
