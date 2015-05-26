@@ -27,6 +27,10 @@ RUN make install
 
 RUN apt-get install -y openssh-server supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN mkdir /var/lock/apache2
+RUN mkdir /var/run/sshd
+RUN chmod 0755 /var/run/sshd
+RUN mkdir /var/run/apache2
 
 RUN mkdir /data
 RUN cp /etc/apache2/sites-available/000-default.conf /data/site.conf
