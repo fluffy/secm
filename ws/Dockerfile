@@ -3,7 +3,6 @@ MAINTAINER Cullen Jennings <fluffy@iii.ca>
 
 RUN apt-get update
 RUN apt-get install -y git
-RUN apt-get install -y emacs24-nox
 
 RUN apt-get install -y autotools-dev
 RUN apt-get install -y autoconf
@@ -17,6 +16,7 @@ RUN apt-get install -y libcurl4-openssl-dev
 
 RUN apt-get install -y apache2
 
+RUN apt-get install -y emacs24-nox
 RUN apt-get install -y tcsh
 
 WORKDIR /home
