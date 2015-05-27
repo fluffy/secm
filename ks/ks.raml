@@ -1,0 +1,68 @@
+#%RAML 0.8
+
+title: Fluffy KeyServer API
+
+documentation:
+ - title: Overview
+   content: |
+   
+       The key server simply provide a place to store keys and create controll
+       who can access them.  The users that creates a key is known as the
+       owner. The owner of key is also a user and admistrator of the key. Any
+       admistrator can add other users as an admistrator or user of that
+       key. Only users that have been added as a user of they key can retreive
+       the value of the key. When a key is created, the user creating provides
+       the value of key and the server returns a keyID that can be used in
+       future operations on that key.
+
+       The user must authenticated with OpenID Connect for all requests. 
+                       
+version: v1
+baseUri: https://ks.fluffy.im/{version}
+protocols: [ HTTPS ]
+mediaType: application/json
+
+/key:
+    post:
+        description: Create a new key with given value and returns a new keyID
+        body:
+            application/x-www-form-urlencoded:
+                formParameters:
+                    keyVal:
+                        description: |
+
+                                Value of new key. Typically a JOSE key but they
+                                key server does not care what it is and just
+                                treats it as opaque data.
+                                                
+                        type: string
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: TBD
+            
+    /{keyID}:
+        uriParameters:
+            keyID:
+                type: integer
+        get:
+            description: Retrieve a specific key asscoated with keyID 
+        /admin/{adminID}:
+            post:
+                description: Adds the user {adminID} as an admistrator for the key 
+        /user/{userID}:
+            post:
+                description: Adds the user {adminID} as an user of that key so they can read it
+        /owner:
+            get:
+                description: Returns the userID of the owner of the key 
+        /admins:
+            get:
+                description: Returrns the userIDs of the all the admistrators of the key 
+        /users:
+            get:
+                description: Returrns the userIDs of the all the users of the key 
+
+
+
