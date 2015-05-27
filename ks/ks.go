@@ -4,15 +4,8 @@ package main
 TODO
 move all prepares statements to DB setup time
 defer stmt.Close() for all statements
-front end with appache
-appache user auth
-correctly set userID
-dockerize
-api doc
-figure out way to load secrets
 encrypt keys in DB
 DB backup
-
 */
 
 import (
