@@ -42,7 +42,7 @@ func setupDatabase(hostName string, pgPassword string) { // TODO pass in port, u
 
 	// a postgess bigint is signed 64 bit int
 	sqlSetup := `
-        CREATE TABLE IF NOT EXISTS keys ( kID BIGINT NOT NULL, kVal bytea NOT NULL ,  oID BIGINT NOT NULL, PRIMARY KEY( kID ) );
+        CREATE TABLE IF NOT EXISTS keys ( kID BIGINT NOT NULL, kVal bytea NOT NULL, ikVal bytea NOT NULL, oID BIGINT NOT NULL, PRIMARY KEY( kID ) );
         CREATE TABLE IF NOT EXISTS keyUsers ( kID BIGINT NOT NULL, uID BIGINT NOT NULL , PRIMARY KEY( kID,uID ) );
         CREATE TABLE IF NOT EXISTS keyAdmins ( kID BIGINT NOT NULL, uID BIGINT NOT NULL , PRIMARY KEY( kID,uID ) );
         `
@@ -77,12 +77,34 @@ func getKey(keyID int64, userID int64) string {
 	return ""
 }
 
-func createKey(userID int64, keyVal string) int64 {
+func getIKey(keyID int64 ) string {
+	// note if using mySQL use ? but Postgres is $1 in prepare statements
+	stmt, err := db.Prepare(
+		"SELECT keys.ikVal FROM keys WHERE kID = $1")
+	if err != nil {
+		log.Println("sql fatal error in getIKey prep")
+		log.Fatal(err)
+	}
+	var iKeyVal string
+	err = stmt.QueryRow(keyID).Scan(&iKeyVal)
+	switch {
+	case err == sql.ErrNoRows:
+		log.Printf("no key found")
+	case err != nil:
+		log.Println("sql fatal error in getKey querry")
+		log.Fatal(err)
+	default:
+		return iKeyVal
+	}
+	return ""
+}
+
+func createKey(userID int64, keyVal string, iKeyVal string) int64 {
 	var keyID int64 = nonCryptoRand.Int63()
 	var err error
 
 	var stmt [3]*sql.Stmt
-	var cmd [3]string = [3]string{"INSERT INTO keys (kID, kVal, oID) VALUES ($1, $2::bytea,$3)",
+	var cmd [3]string = [3]string{"INSERT INTO keys (kID, kVal, ikVal, oID) VALUES ($1, $2::bytea,$3::bytea,$4)",
 		"INSERT INTO keyUsers (kID,uID) VALUES ($1,$2)",
 		"INSERT INTO keyAdmins (kID,uID) VALUES ($1,$2);"}
 	// note if using mySQL use ? but Postgres is $1 in prepare statements
@@ -97,7 +119,7 @@ func createKey(userID int64, keyVal string) int64 {
 
 	for i := range cmd {
 		if i == 0 {
-			_, err = stmt[i].Exec(keyID, keyVal, userID)
+			_, err = stmt[i].Exec(keyID, keyVal, iKeyVal, userID)
 		} else {
 			_, err = stmt[i].Exec(keyID, userID)
 		}
@@ -127,7 +149,7 @@ func addRole(keyID int64, userID int64, role string, roleID int64) error {
 
 	stmt, err = db.Prepare(cmd)
 	if err != nil {
-		log.Println("sql fatal error in createKey prep for", cmd)
+		log.Println("sql fatal error in addRole prep for", cmd)
 		log.Fatal(err)
 	}
 
@@ -194,6 +216,9 @@ func getUserID(  r *http.Request ) (int64,error) {
 
 	var email string = r.Header.Get("OIDC_CLAIM_email")
 	if email == "" {
+		if true { // TODO remove - test mode
+			return 1,nil
+		}
 		return 0, errors.New("bad authentication")
 	}
 	var verified string = r.Header.Get("OIDC_CLAIM_email_verified")
@@ -231,8 +256,8 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID,err = getUserID(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
+		userID = 0
+		email = "no-user"
 	}
 	
 	data := PageData{ Email: email, UserID:userID  }
@@ -242,7 +267,23 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
+func meHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var userID int64 = 1
+	userID,err = getUserID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	
+	log.Println("GET me: userID=", userID)
+
+	io.WriteString(w,   "{ \"userID\":"  + " \"" + strconv.FormatInt( userID, 10) + "\" " + "}" )
+}
+
+func fetchKeyHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -267,6 +308,23 @@ func searchKeyHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, getKey(keyID, userID) )
 }
 
+func fetchIKeyHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	var keyID int64 = 0
+	keyID, err = strconv.ParseInt( vars["keyID"], 0, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	log.Println("GET iKey: keyID=", keyID)
+
+	io.WriteString(w, getIKey( keyID ) )
+}
+
 func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -276,19 +334,20 @@ func createKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var keyVal string = r.FormValue("keyVal")
+	var iKeyVal string = r.FormValue("iKeyVal")
 	var userID int64 = 1
 
 	userID,err = getUserID(r)
 	if err != nil {
+		log.Println("FAIL POST createKey due to unauthorized" )
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 	
-	var keyID int64 = createKey(userID, keyVal)
-
+	var keyID int64 = createKey(userID, keyVal, iKeyVal)
+	
 	log.Println("POST createKey: keyID=", keyID, "userID=", userID)
-
-	io.WriteString(w, "{ \"keyID\": "+strconv.FormatInt(keyID, 10)+" }")
+	io.WriteString(w, "{ \"keyID\": "+ "\""+strconv.FormatInt(keyID, 10)+ "\"" +" }")
 }
 
 func addRoleHandler(w http.ResponseWriter, r *http.Request) {
@@ -333,7 +392,7 @@ func addRoleHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = addRole(keyID, userID, role, roleID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusConflict)
 	}
 }
 
@@ -383,7 +442,7 @@ func getKeyMetaHandler(w http.ResponseWriter, r *http.Request) {
 		if i != 0 {
 			io.WriteString(w, ",")
 		}
-		io.WriteString(w, strconv.FormatInt(vals[i], 10))
+		io.WriteString(w, "\"" + strconv.FormatInt(vals[i], 10) + "\"" )
 	}
 	io.WriteString(w, " ] }")
 }
@@ -414,9 +473,11 @@ func main() {
 	// set up the routes
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
+	router.HandleFunc("/v1/identity/me", meHandler).Methods("GET")
 	router.HandleFunc("/v1/key", createKeyHandler).Methods("POST")
-	router.HandleFunc("/v1/key/{keyID}", searchKeyHandler).Methods("GET")
-	router.HandleFunc("/v1/key/{keyID}/{role}/{roleID}", addRoleHandler).Methods("POST") // role is user | admin
+	router.HandleFunc("/v1/key/{keyID}", fetchKeyHandler).Methods("GET")
+	router.HandleFunc("/v1/iKey/{keyID}", fetchIKeyHandler).Methods("GET")
+	router.HandleFunc("/v1/key/{keyID}/{role}/{roleID}", addRoleHandler).Methods("PUT") // role is user | admin
 	router.HandleFunc("/v1/key/{keyID}/{meta}", getKeyMetaHandler).Methods("GET")        // meta is ownwer | users | admins
 	http.Handle("/", router)
 
