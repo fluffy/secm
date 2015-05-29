@@ -1,6 +1,9 @@
 #!/bin/bash 
 set -e
 
+echo -n Starting: ; date 
+
+
 if [ -z "$1" ]; then
     echo usage: $0 MAC_NAME;
     exit;
@@ -30,6 +33,8 @@ fi
 
 # flavors can be found at http://docs.rackspace.com/cas/api/v1.0/autoscale-devguide/content/server-flavors.html
 docker-machine create --driver rackspace --rackspace-flavor-id 2 "$MAC_NAME"
+
+echo Machine IP is `docker-machine ip $MAC_NAME`
 
 #set the IP to point at it
 setenv TOKEN ` curl -D - -H "X-Auth-Key: $OS_API_KEY" -H "X-Auth-User: $OS_USERNAME" https://auth.api.rackspacecloud.com/v1.0 | grep "X-Auth-Token\:" | awk ' { print $2 } ' `
@@ -67,4 +72,6 @@ echo
 echo Machine IP is `docker-machine ip $MAC_NAME`
 echo Remember to delete server at https://mycloud.rackspace.com
 
+
+echo -n Finished ; date
 
