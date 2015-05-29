@@ -15,6 +15,12 @@ documentation:
        the value of key and the server returns a keyID that can be used in
        future operations on that key.
 
+       Each key has a main key and also an integrity key. The integrity keys can
+       be retrived by any user that has access to the /iKey interface. Typically
+       the main keys will be used by users to encrypt objects for other users
+       while the iKey will be used by the users to and cloud services to all the
+       user to prove to the cloud server that it is allowed to use that key.
+
        The user must authenticated with OpenID Connect for all requests. 
                        
 version: v1
@@ -24,7 +30,7 @@ mediaType: application/json
 
 /key:
     post:
-        description: Create a new key with given value and returns a new keyID
+        description: Create a new key with given value and returns a new keyID as a parameter called "keyID" in a JSON object. 
         body:
             application/x-www-form-urlencoded:
                 formParameters:
@@ -36,33 +42,105 @@ mediaType: application/json
                                 treats it as opaque data.
                                                 
                         type: string
+                        required: true 
+                    iKeyVal:
+                        description: |
+
+                                Value of new integreity key. Typically a JOSE
+                                key but they key server does not care what it is
+                                and just treats it as opaque data. This is a
+                                secondary key that is typically used for
+                                integrity.
+                                                
+                        type: string
+                    
         responses:
             200:
                 body:
                     application/json:
-                        example: TBD
+                        example: |
+                                 { "keyID": "3584784052509480386" }
+                     
+                  
             
     /{keyID}:
         uriParameters:
             keyID:
                 type: integer
         get:
-            description: Retrieve a specific key asscoated with keyID 
+            description: Retrieve a specific key asscoated with keyID
+            responses:
+                401:
+                    description: Some error in retreiving an authorized user
+                404:
+                    description: This keyID does not exist
+                200:
+                    body:
+                        text/plain:
         /admin/{adminID}:
-            post:
-                description: Adds the user {adminID} as an admistrator for the key 
+            put:
+                description: Adds the user {adminID} as an admistrator for the key
+                responses:
+                    200:
+                    409:
+                        description: This adminID is alreaady an admin of this key
         /user/{userID}:
-            post:
+            put:
                 description: Adds the user {adminID} as an user of that key so they can read it
+                responses:
+                    200:
+                    409:
+                        description: This userID is alreaady an user of this key
         /owner:
             get:
-                description: Returns the userID of the owner of the key 
+                description: Returns the userID of the owner of the key
+                responses:
+                    200:
+                        body:
+                            application/json:
+                                example: |
+                                        { "ownerIDs": [ "1" ] }
         /admins:
             get:
-                description: Returrns the userIDs of the all the admistrators of the key 
+                description: Returrns the userIDs of the all the admistrators of the key
+                responses:
+                    200:
+                        body:
+                            application/json:
+                                example: |
+                                        { "adminIDs": [ "1","2","3","4" ] }
         /users:
             get:
                 description: Returrns the userIDs of the all the users of the key 
+                responses:
+                    200:
+                        body:
+                            application/json:
+                                example: |
+                                        { "userIDs": [ "1" ] }
 
-
-
+/identity/me:
+    get:
+        description: Returns userID for this user. 
+        responses:
+            401:
+                description: Some error in retreiving an authorized user 
+            200:
+                body:
+                    application/json:
+                        example: |
+                            { "userID": "1" }
+        
+/ikey:
+    /{keyID}:
+        uriParameters:
+            keyID:
+                type: integer
+        get:
+            description: Retrieve a only the integrity key asscoated with keyID 
+            responses:
+                404:
+                    description: This keyID does not exist
+                200:
+                    body:
+                        text/plain:
