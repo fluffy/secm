@@ -1,0 +1,148 @@
+<!DOCTYPE HTML><html><head><title>Fluffy KeyServer API API documentation</title><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="generator" content="https://github.com/kevinrenskers/raml2html 2.0.0"><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css"><script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script><script type="text/javascript" src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js"></script><script type="text/javascript">
+      $(document).ready(function() {
+        $('.page-header pre code, .top-resource-description pre code').each(function(i, block) {
+          hljs.highlightBlock(block);
+        });
+
+        $('[data-toggle]').click(function() {
+          var selector = $(this).data('target') + ' pre code';
+          $(selector).each(function(i, block) {
+            hljs.highlightBlock(block);
+          });
+        });
+
+        // open modal on hashes like #_action_get
+        $(window).bind('hashchange', function(e) {
+          var anchor_id = document.location.hash.substr(1); //strip #
+          var element = $('#' + anchor_id);
+
+          // do we have such element + is it a modal?  --> show it
+          if (element.length && element.hasClass('modal')) {
+            element.modal('show');
+          }
+        });
+
+        // execute hashchange on first page load
+        $(window).trigger('hashchange');
+
+        // remove url fragment on modal hide
+        $('.modal').on('hidden.bs.modal', function() {
+          if(history && history.replaceState) {
+            history.replaceState({}, '', '#');
+          }
+        });
+      });
+    </script><style>
+      .hljs {
+        background: transparent;
+      }
+      .parent {
+        color: #999;
+      }
+      .list-group-item > .badge {
+        float: none;
+        margin-right: 6px;
+      }
+      .panel-title > .methods {
+        float: right;
+      }
+      .badge {
+        border-radius: 0;
+        text-transform: uppercase;
+        width: 70px;
+        font-weight: normal;
+        color: #f3f3f6;
+        line-height: normal;
+      }
+      .badge_get {
+        background-color: #63a8e2;
+      }
+      .badge_post {
+        background-color: #6cbd7d;
+      }
+      .badge_put {
+        background-color: #22bac4;
+      }
+      .badge_delete {
+        background-color: #d26460;
+      }
+      .badge_patch {
+        background-color: #ccc444;
+      }
+      .list-group, .panel-group {
+        margin-bottom: 0;
+      }
+      .panel-group .panel+.panel-white {
+        margin-top: 0;
+      }
+      .panel-group .panel-white {
+        border-bottom: 1px solid #F5F5F5;
+        border-radius: 0;
+      }
+      .panel-white:last-child {
+        border-bottom-color: white;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+      }
+      .panel-white .panel-heading {
+        background: white;
+      }
+      .tab-pane ul {
+        padding-left: 2em;
+      }
+      .tab-pane h2 {
+        font-size: 1.2em;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #ddd;
+      }
+      .tab-pane h3 {
+        font-size: 1.1em;
+      }
+      .tab-content {
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+        padding: 10px;
+      }
+      #sidebar {
+        margin-top: 30px;
+        padding-right: 5px;
+        overflow: auto;
+        height: 90%;
+      }
+      .top-resource-description {
+        border-bottom: 1px solid #ddd;
+        background: #fcfcfc;
+        padding: 15px 15px 0 15px;
+        margin: -15px -15px 10px -15px;
+      }
+      .resource-description {
+        border-bottom: 1px solid #fcfcfc;
+        background: #fcfcfc;
+        padding: 15px 15px 0 15px;
+        margin: -15px -15px 10px -15px;
+      }
+      .resource-description p:last-child {
+        margin: 0;
+      }
+      .list-group .badge {
+        float: left;
+      }
+      .method_description {
+        margin-left: 85px;
+      }
+      .method_description p:last-child {
+        margin: 0;
+      }
+      .list-group-item {
+        cursor: pointer;
+      }
+      .list-group-item:hover {
+        background-color: #f5f5f5;
+      }
+    </style></head><body data-spy="scroll" data-target="#sidebar"><div class="container"><div class="row"><div class="col-md-9" role="main"><div class="page-header"><h1>Fluffy KeyServer API API documentation <small>version v1</small></h1><p>https://ks.fluffy.im/v1</p><h3 id="Overview"><a href="#Overview">Overview</a></h3><p>The key server simply provide a place to store keys and create controll who can access them. The users that creates a key is known as the owner. The owner of key is also a user and admistrator of the key. Any admistrator can add other users as an admistrator or user of that key. Only users that have been added as a user of they key can retreive the value of the key. When a key is created, the user creating provides the value of key and the server returns a keyID that can be used in future operations on that key.</p><p>Each key has a main key and also an integrity key. The integrity keys can be retrived by any user that has access to the /iKey interface. Typically the main keys will be used by users to encrypt objects for other users while the iKey will be used by the users to and cloud services to all the user to prove to the cloud server that it is allowed to use that key.</p><p>The user must authenticated with OpenID Connect for all requests.</p></div><div class="panel panel-default"><div class="panel-heading"><h3 id="key" class="panel-title">/key</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_key"><span class="parent"></span>/key</a> <span class="methods"><a href="#key_post"><span class="badge badge_post">post</span></a></span></h4></div><div id="panel_key" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#key_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><p>Create a new key with given value and returns a new keyID as a parameter called "keyID" in a JSON object.</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="key_post"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_post">post</span> <span class="parent"></span>/key</h4></div><div class="modal-body"><div class="alert alert-info"><p>Create a new key with given value and returns a new keyID as a parameter called "keyID" in a JSON object.</p></div><ul class="nav nav-tabs"><li class="active"><a href="#key_post_request" data-toggle="tab">Request</a></li><li><a href="#key_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="key_post_request"><h3>Body</h3><p><strong>Type: application/x-www-form-urlencoded</strong></p><strong>Form Parameters</strong><ul><li><strong>keyVal</strong>: <em>required (string)</em><p>Value of new key. Typically a JOSE key but they key server does not care what it is and just treats it as opaque data.</p></li><li><strong>iKeyVal</strong>: <em>(string)</em><p>Value of new integreity key. Typically a JOSE key but they key server does not care what it is and just treats it as opaque data. This is a secondary key that is typically used for integrity.</p></li></ul></div><div class="tab-pane" id="key_post_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h3>Body</h3><p><strong>Type: application/json</strong></p><p><strong>Example</strong>:</p><pre><code>{ "keyID": "3584784052509480386" }
+</code></pre></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_key__keyID_"><span class="parent">/key</span>/{keyID}</a> <span class="methods"><a href="#key__keyID__get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_key__keyID_" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#key__keyID__get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Retrieve a specific key asscoated with keyID</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="key__keyID__get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent">/key</span>/{keyID}</h4></div><div class="modal-body"><div class="alert alert-info"><p>Retrieve a specific key asscoated with keyID</p></div><ul class="nav nav-tabs"><li class="active"><a href="#key__keyID__get_request" data-toggle="tab">Request</a></li><li><a href="#key__keyID__get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="key__keyID__get_request"><h3>URI Parameters</h3><ul><li><strong>keyID</strong>: <em>required (integer)</em></li></ul></div><div class="tab-pane" id="key__keyID__get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h3>Body</h3><p><strong>Type: text/plain</strong></p><h2>HTTP status code <a href="http://httpstatus.es/401" target="_blank">401</a></h2><p>Some error in retreiving an authorized user</p><h2>HTTP status code <a href="http://httpstatus.es/404" target="_blank">404</a></h2><p>This keyID does not exist</p></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_key__keyID__admin__adminID_"><span class="parent">/key/{keyID}</span>/admin/{adminID}</a> <span class="methods"><a href="#key__keyID__admin__adminID__put"><span class="badge badge_put">put</span></a></span></h4></div><div id="panel_key__keyID__admin__adminID_" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#key__keyID__admin__adminID__put'" class="list-group-item"><span class="badge badge_put">put</span><div class="method_description"><p>Adds the user {adminID} as an admistrator for the key</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="key__keyID__admin__adminID__put"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_put">put</span> <span class="parent">/key/{keyID}</span>/admin/{adminID}</h4></div><div class="modal-body"><div class="alert alert-info"><p>Adds the user {adminID} as an admistrator for the key</p></div><ul class="nav nav-tabs"><li class="active"><a href="#key__keyID__admin__adminID__put_request" data-toggle="tab">Request</a></li><li><a href="#key__keyID__admin__adminID__put_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="key__keyID__admin__adminID__put_request"><h3>URI Parameters</h3><ul><li><strong>keyID</strong>: <em>required (integer)</em></li><li><strong>adminID</strong>: <em>required (string)</em></li></ul></div><div class="tab-pane" id="key__keyID__admin__adminID__put_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h2>HTTP status code <a href="http://httpstatus.es/409" target="_blank">409</a></h2><p>This adminID is alreaady an admin of this key</p></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_key__keyID__user__userID_"><span class="parent">/key/{keyID}</span>/user/{userID}</a> <span class="methods"><a href="#key__keyID__user__userID__put"><span class="badge badge_put">put</span></a></span></h4></div><div id="panel_key__keyID__user__userID_" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#key__keyID__user__userID__put'" class="list-group-item"><span class="badge badge_put">put</span><div class="method_description"><p>Adds the user {adminID} as an user of that key so they can read it</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="key__keyID__user__userID__put"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_put">put</span> <span class="parent">/key/{keyID}</span>/user/{userID}</h4></div><div class="modal-body"><div class="alert alert-info"><p>Adds the user {adminID} as an user of that key so they can read it</p></div><ul class="nav nav-tabs"><li class="active"><a href="#key__keyID__user__userID__put_request" data-toggle="tab">Request</a></li><li><a href="#key__keyID__user__userID__put_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="key__keyID__user__userID__put_request"><h3>URI Parameters</h3><ul><li><strong>keyID</strong>: <em>required (integer)</em></li><li><strong>userID</strong>: <em>required (string)</em></li></ul></div><div class="tab-pane" id="key__keyID__user__userID__put_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h2>HTTP status code <a href="http://httpstatus.es/409" target="_blank">409</a></h2><p>This userID is alreaady an user of this key</p></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_key__keyID__owner"><span class="parent">/key/{keyID}</span>/owner</a> <span class="methods"><a href="#key__keyID__owner_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_key__keyID__owner" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#key__keyID__owner_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Returns the userID of the owner of the key</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="key__keyID__owner_get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent">/key/{keyID}</span>/owner</h4></div><div class="modal-body"><div class="alert alert-info"><p>Returns the userID of the owner of the key</p></div><ul class="nav nav-tabs"><li class="active"><a href="#key__keyID__owner_get_request" data-toggle="tab">Request</a></li><li><a href="#key__keyID__owner_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="key__keyID__owner_get_request"><h3>URI Parameters</h3><ul><li><strong>keyID</strong>: <em>required (integer)</em></li></ul></div><div class="tab-pane" id="key__keyID__owner_get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h3>Body</h3><p><strong>Type: application/json</strong></p><p><strong>Example</strong>:</p><pre><code>{ "ownerIDs": [ "1" ] }
+</code></pre></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_key__keyID__admins"><span class="parent">/key/{keyID}</span>/admins</a> <span class="methods"><a href="#key__keyID__admins_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_key__keyID__admins" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#key__keyID__admins_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Returrns the userIDs of the all the admistrators of the key</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="key__keyID__admins_get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent">/key/{keyID}</span>/admins</h4></div><div class="modal-body"><div class="alert alert-info"><p>Returrns the userIDs of the all the admistrators of the key</p></div><ul class="nav nav-tabs"><li class="active"><a href="#key__keyID__admins_get_request" data-toggle="tab">Request</a></li><li><a href="#key__keyID__admins_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="key__keyID__admins_get_request"><h3>URI Parameters</h3><ul><li><strong>keyID</strong>: <em>required (integer)</em></li></ul></div><div class="tab-pane" id="key__keyID__admins_get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h3>Body</h3><p><strong>Type: application/json</strong></p><p><strong>Example</strong>:</p><pre><code>{ "adminIDs": [ "1","2","3","4" ] }
+</code></pre></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_key__keyID__users"><span class="parent">/key/{keyID}</span>/users</a> <span class="methods"><a href="#key__keyID__users_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_key__keyID__users" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#key__keyID__users_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Returrns the userIDs of the all the users of the key</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="key__keyID__users_get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent">/key/{keyID}</span>/users</h4></div><div class="modal-body"><div class="alert alert-info"><p>Returrns the userIDs of the all the users of the key</p></div><ul class="nav nav-tabs"><li class="active"><a href="#key__keyID__users_get_request" data-toggle="tab">Request</a></li><li><a href="#key__keyID__users_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="key__keyID__users_get_request"><h3>URI Parameters</h3><ul><li><strong>keyID</strong>: <em>required (integer)</em></li></ul></div><div class="tab-pane" id="key__keyID__users_get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h3>Body</h3><p><strong>Type: application/json</strong></p><p><strong>Example</strong>:</p><pre><code>{ "userIDs": [ "1" ] }
+</code></pre></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="identity_me" class="panel-title">/identity/me</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_identity_me"><span class="parent"></span>/identity/me</a> <span class="methods"><a href="#identity_me_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_identity_me" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#identity_me_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Returns userID for this user.</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="identity_me_get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent"></span>/identity/me</h4></div><div class="modal-body"><div class="alert alert-info"><p>Returns userID for this user.</p></div><ul class="nav nav-tabs"><li><a href="#identity_me_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane" id="identity_me_get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h3>Body</h3><p><strong>Type: application/json</strong></p><p><strong>Example</strong>:</p><pre><code>{ "userID": "1" }
+</code></pre><h2>HTTP status code <a href="http://httpstatus.es/401" target="_blank">401</a></h2><p>Some error in retreiving an authorized user</p></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="ikey" class="panel-title">/ikey</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_ikey__keyID_"><span class="parent">/ikey</span>/{keyID}</a> <span class="methods"><a href="#ikey__keyID__get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_ikey__keyID_" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#ikey__keyID__get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Retrieve a only the integrity key asscoated with keyID</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="ikey__keyID__get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent">/ikey</span>/{keyID}</h4></div><div class="modal-body"><div class="alert alert-info"><p>Retrieve a only the integrity key asscoated with keyID</p></div><ul class="nav nav-tabs"><li class="active"><a href="#ikey__keyID__get_request" data-toggle="tab">Request</a></li><li><a href="#ikey__keyID__get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="ikey__keyID__get_request"><h3>URI Parameters</h3><ul><li><strong>keyID</strong>: <em>required (integer)</em></li></ul></div><div class="tab-pane" id="ikey__keyID__get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h3>Body</h3><p><strong>Type: text/plain</strong></p><h2>HTTP status code <a href="http://httpstatus.es/404" target="_blank">404</a></h2><p>This keyID does not exist</p></div></div></div></div></div></div></div></div></div></div></div><div class="col-md-3"><div id="sidebar" class="hidden-print affix" role="complementary"><ul class="nav nav-pills nav-stacked"><li><a href="#key">/key</a></li><li><a href="#identity_me">/identity/me</a></li><li><a href="#ikey">/ikey</a></li></ul></div></div></div></div></body></html>
