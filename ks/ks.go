@@ -2,6 +2,10 @@ package main
 
 /*
 TODO
+
+- Need to sort out auth for iKey so that only user of key or cloud can read it 
+
+
 move all prepares statements to DB setup time
 defer stmt.Close() for all statements
 encrypt keys in DB

@@ -37,8 +37,8 @@ docker-machine create --driver rackspace --rackspace-flavor-id 2 "$MAC_NAME"
 echo Machine IP is `docker-machine ip $MAC_NAME`
 
 #set the IP to point at it
-setenv TOKEN ` curl -D - -H "X-Auth-Key: $OS_API_KEY" -H "X-Auth-User: $OS_USERNAME" https://auth.api.rackspacecloud.com/v1.0 | grep "X-Auth-Token\:" | awk ' { print $2 } ' `
-setenv IP `docker-machine ip $MAC_NAME`
+export TOKEN=` curl -D - -H "X-Auth-Key: $OS_API_KEY" -H "X-Auth-User: $OS_USERNAME" https://auth.api.rackspacecloud.com/v1.0 | grep "X-Auth-Token\:" | awk ' { print $2 } ' `
+export IP=`docker-machine ip $MAC_NAME`
 curl -X PUT -H X-Auth-Token:\ $TOKEN -H Content-Type:\ application/json https://dns.api.rackspacecloud.com/v1.0/$RS_ACCOUNT_NUMBER/domains/$RS_DOMAIN_ID/records/$RS_RECORD --data ' { "data": "'$IP'" } '
 
 #build the docker images 
