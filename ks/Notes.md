@@ -22,6 +22,8 @@ curl --data "keyVal=__2__" http://ks.fluffy.im:8080/v1/key
 curl http://ks.fluffy.im:8080/v1/key/861802244120027882
 
 
+curl -X PUT localhost:8080/v1/key/8076057682715357751/admin/10 --verbose
+
 
 Info for docker on rackspace at
 https://developer.rackspace.com/blog/using-docker-machine-to-deploy-your-docker-containers-on-rackspace/
@@ -64,9 +66,7 @@ docker `docker-machine config test3` run -it --link my-postgres:postgres --rm po
 # or my local mac
 setenv PGPASSWORD  $SECM_DB_SECRET
 /Library/PostgreSQL/9.1/bin/psql -h `docker-machine ip test7` -p 5432 -U postgres
-
-
-/Library/PostgreSQL/9.1/bin/pg_dump -h `docker-machine ip test7` -p 5432 -U postgres -w postgres
+/Library/PostgreSQL/9.1/bin/psql -h ks.fluffy.im -U postgres
 
 
 
@@ -207,6 +207,30 @@ curl --data "keyVal=__5__" --header "OIDC_CLAIM_email: xxx@gmail" --header
 
 curl --header "OIDC_CLAIM_email: xxx@gmail" --header "OIDC_CLAIM_email_verified:
 1" http://localhost:8080/v1/key/2991017719384258649
+
+
+
+
+# get auth token 
+ setenv TOKEN ` curl -D - -H "X-Auth-Key: $OS_API_KEY" -H "X-Auth-User: $OS_USERNAME" https://auth.api.rackspacecloud.com/v1.0 | grep "X-Auth-Token\:" | awk ' { print $2 } ' `
+
+# list all domains
+setenv RS_ACCOUNT_NUMBER TODO
+curl -X GET -H X-Auth-Token:\ $TOKEN -H Accept:\ application/json https://dns.api.rackspacecloud.com/v1.0/$RS_ACCOUNT_NUMBER/domains
+
+# get all records 
+setenv RS_DOMAIN_ID TODO
+curl -X GET -H X-Auth-Token:\ $TOKEN -H Accept:\ application/json https://dns.api.rackspacecloud.com/v1.0/$RS_ACCOUNT_NUMBER/domains/$RS_DOMAIN_ID
+
+# set the IP 
+setenv RS_RECORD A-TODO
+setenv IP 162.209.75.124
+setenv IP `docker-machine ip $MAC_NAME`
+curl -X PUT -H X-Auth-Token:\ $TOKEN -H Content-Type:\ application/json https://dns.api.rackspacecloud.com/v1.0/$RS_ACCOUNT_NUMBER/domains/$RS_DOMAIN_ID/records/$RS_RECORD --data ' { "data": "'$IP'" } '
+
+#check the record
+curl -X GET -H X-Auth-Token:\ $TOKEN -H Accept:\ application/json https://dns.api.rackspacecloud.com/v1.0/$RS_ACCOUNT_NUMBER/domains/$RS_DOMAIN_ID/records/$RS_RECORD
+
 
 
 
