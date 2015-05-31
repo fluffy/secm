@@ -3,6 +3,6 @@ curl --data '{ "msg": "hello" }' --header "Content-Type:application/json" localh
 
 curl --header "Accept:application/json" localhost:8081/v1/msg/1234-1
 
-
+go run ms.go http://ks.fluffy.im:8080/
 
 

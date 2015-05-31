@@ -25,6 +25,7 @@ import (
 
 var templates = template.Must(template.ParseFiles("index.html"))
 
+var ksURL string = "https://localhost:443/"
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -35,13 +36,15 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	type PageData struct {
-		ksURL string
+		// Need to start with upper case letter 
+		KSUrl string
 	}
 
-	data := PageData{ ksURL: "http://ks.fluffy.im:8080/"  }
+	data := PageData{ KSUrl: ksURL  }
 	err = templates.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -61,6 +64,7 @@ func createMsgHandler(w http.ResponseWriter, r *http.Request) {
 	err = r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	
 	
@@ -68,6 +72,7 @@ func createMsgHandler(w http.ResponseWriter, r *http.Request) {
 	contents, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	msg := string(contents)
 
@@ -107,9 +112,11 @@ func getMsgHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// get all the configuration data
 	if len(os.Args) != 2 {
-		log.Fatal("must pass database hostname on CLI")
+		log.Fatal("must pass KS URL on CLI")
 	}
 
+	ksURL = os.Args[1]
+	
 	// set up the routes
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
