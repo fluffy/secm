@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title> SECM Test Client </title>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="secm.js"></script>
+</head>
+
+<body>
+<h1> SECM Test Client  </h1>
+
+<div>
+<p>
+  KS URL:<input id="ksUrlID" size="40" value="http://ks.fluffy.im:8080/"></input>
+  MS URL:<input id="msUrlID" size="40" value="http://localhost:8081/"></input>
+</p>
+</div>
+
+
+<div>
+<button id="createID"> Create Key </button>
+<input id="inValID"> </input>
+<input id="inVal2ID"> </input>
+</div>
+
+<div>
+  <p>
+  KeyID:<input id="keyID"></input>
+  </p>
+</div>
+
+<button id="getKeyID"> Fetch Key </button>
+<button id="getIKeyID"> Fetch iKey </button>
+
+<div>
+  <p>
+  KeyVal: <span id="outKeyValID"></span>
+  </p>
+   <p>
+  iKeyVal: <span id="outIKeyValID"></span>
+  </p>
+</div>
+
+
+<div>
+<button id="postMsgID"> Post Msg </button>
+<input id="msgInVal"> </input>
+</div>
+
+<div>
+  <p>
+  SeqNum:<input id="seqNumID" size="6" ></input>
+  </p>
+</div>
+
+<button id="getMsgID"> Fetch Msg </button>
+
+<div>
+  <p>
+  MsgVal: <span id="outValID"></span>
+  </p>
+</div>
+
+
+
+</body>
+</html>
