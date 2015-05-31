@@ -7,10 +7,11 @@ documentation:
    content: |
 
        The message server takes messages that are signed with the integrity key
-       for a given channel and adds them to that channel by allocating a a name
-       for the in the CDN and pushing them into the CDN. The MS also tell the
-       notification server to let all the users of this key know there is a new
-       messages in the channel.
+       for a given channel and adds them to that channel by allocating aa name
+       for the in the CDN and pushing them into the CDN. The name is combination
+       of the keyID and a sequence number that starts at 1 and increments by 1
+       for each new post. The MS also tell the notification server to let all
+       the users of this key know there is a new messages in the channel.
 
 
 version: v1
@@ -18,19 +19,24 @@ baseUri: https://ms.fluffy.im/{version}
 protocols: [ HTTP ]
 mediaType: application/json
 
-/msg/{keyID}:
+/ch/{keyID}:
     post:
-      description: Create a new message using keyID and return a new msgID for it  
+      description: Create a new message for channel keyID and return a new sequence number for it  
       body:
       responses:
         200:
             body:
                 application/json:
                     example: |
-                         { "msgID": "3584784052509480386-22" }
+                         { "seqNum": "22" }
 
 
-/msg/{msgID}:
+/ch/{keyID}/count:
+    get:
+        description: Get the last seqeunce number for that channel 
+
+
+/msg/{keyID}-{seqNum}:
     get:
         description: Retrieve a specific message 
         

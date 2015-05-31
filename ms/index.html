@@ -47,7 +47,7 @@ KS URL: {{ .KSUrl }}
 
 <div>
   <p>
-  MsgID:<input id="msgID" size="40" ></input>
+  SeqNum:<input id="seqNumID" size="6" ></input>
   </p>
 </div>
 
@@ -88,18 +88,18 @@ $(document).ready(function(){
 
   $("#postMsgID").click(function(){
         $.ajax({ type: "POST",
-                 url : "v1/msg/" + $("#keyID").val(),
+                 url : "v1/ch/" + $("#keyID").val(),
                  data: $("#msgInVal").val(),
                  success: function(data,status){
                      var d = jQuery.parseJSON( data );
-                     $("#msgID").val( d.msgID );
+                     $("#seqNumID").val( d.seqNum );
                  },
                  contentType: false
         });
   });
 
   $("#getMsgID").click(function(){
-        $.get("v1/msg/" + $("#msgID").val() ,
+        $.get("v1/msg/" + $("#keyID").val() + "-" + $("#seqNumID").val() ,
         function(data,status){
            $("#outValID").text( data );
         });

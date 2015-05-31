@@ -91,8 +91,8 @@ func createMsgHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	msg := string(contents)
 
-	var seqNo int64 = getNextSeq(keyID)
-	var msgID string = strconv.FormatInt(keyID, 10) + "-" + strconv.FormatInt(seqNo, 10) 
+	var seqNum int64 = getNextSeq(keyID)
+	var msgID string = strconv.FormatInt(keyID, 10) + "-" + strconv.FormatInt(seqNum, 10) 
 	
 	err = msgCollection.Insert( &Message{ msgID,msg } )
 	if err != nil {
@@ -100,9 +100,9 @@ func createMsgHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	log.Println("POST createMsg: keyID=", keyID, "seqNo=", seqNo, "msg=", msg)
+	log.Println("POST createMsg: keyID=", keyID, "seqNum=", seqNum )
 	
-	io.WriteString(w, "{ \"msgID\": "+ "\""+strconv.FormatInt(keyID, 10)+"-"+strconv.FormatInt(seqNo, 10)+ "\"" +" }")
+	io.WriteString(w, "{ \"seqNum\": "+ "\""+strconv.FormatInt(seqNum, 10)+ "\"" +" }")
 }
 
 func getMsgHandler(w http.ResponseWriter, r *http.Request) {
@@ -117,14 +117,14 @@ func getMsgHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var seqNo int64
-	seqNo, err = strconv.ParseInt( vars["seqNo"], 0, 64)
+	var seqNum int64
+	seqNum, err = strconv.ParseInt( vars["seqNum"], 0, 64)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	var msgID string = strconv.FormatInt(keyID, 10) + "-" + strconv.FormatInt(seqNo, 10) 
+	var msgID string = strconv.FormatInt(keyID, 10) + "-" + strconv.FormatInt(seqNum, 10) 
 	
 	log.Println("GET msg: msgID=", msgID )
 	result := Message{}
@@ -186,8 +186,8 @@ func main() {
 	// set up the routes
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
-	router.HandleFunc("/v1/msg/{keyID}", createMsgHandler).Methods("POST")
-	router.HandleFunc("/v1/msg/{keyID}-{seqNo}", getMsgHandler).Methods("GET")
+	router.HandleFunc("/v1/ch/{keyID}", createMsgHandler).Methods("POST")
+	router.HandleFunc("/v1/msg/{keyID}-{seqNum}", getMsgHandler).Methods("GET")
 
 	http.Handle("/", router)
 
