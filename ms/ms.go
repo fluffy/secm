@@ -10,6 +10,8 @@ import (
 	"html/template"
 	"os"
 	"github.com/gorilla/mux"
+	"strconv"
+	"io"
 )
 
 var templates = template.Must(template.ParseFiles("index.html"))
@@ -35,6 +37,30 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func createMsgHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var keyID int64
+	
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	keyID, err = strconv.ParseInt( vars["keyID"], 0, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	var msg string = r.FormValue("msg")
+
+	var seqNo int64 = 1
+	
+	log.Println("POST createMsg: keyID=", keyID, "seqNo=", seqNo, "msg=", msg)
+	io.WriteString(w, "{ \"msgID\": "+ "\""+strconv.FormatInt(keyID, 10)+"-"+strconv.FormatInt(seqNo, 10)+ "\"" +" }")
+}
 
 func main() {
 	// get all the configuration data
@@ -45,6 +71,8 @@ func main() {
 		// set up the routes
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
+	router.HandleFunc("/v1/msg/{keyID}", createMsgHandler).Methods("POST")
+	//router.HandleFunc("/v1/msg/{msgID}", getMsgHandler).Methods("GET")
 
 	http.Handle("/", router)
 
