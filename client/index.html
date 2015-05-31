@@ -11,57 +11,56 @@
 
 <div>
 <p>
-  KS URL:<input id="ksUrlID" size="40" value="http://ks.fluffy.im:8080/"></input>
-  MS URL:<input id="msUrlID" size="40" value="http://localhost:8081/"></input>
+  KS URL:<input id="ksUrl" size="40" value="http://ks.fluffy.im:8080/"></input>
+  MS URL:<input id="msUrl" size="40" value="http://localhost:8081/"></input>
 </p>
-</div>
-
-
-<div>
-<button id="createID"> Create Key </button>
-<input id="inValID"> </input>
-<input id="inVal2ID"> </input>
 </div>
 
 <div>
   <p>
+  <button id="genBut"> Generate Key </button> </br>
+  User Key: <input id="uKeyIn" size="100"> </input> </br>
+  Cloud Key: <input id="cKeyIn" size="100"> </input>
+  </p>
+</div>
+
+<div>
+  <p>
+  <button id="storeKeyBut"> Store Key </button> </br>
   KeyID:<input id="keyID"></input>
   </p>
 </div>
 
-<button id="getKeyID"> Fetch Key </button>
-<button id="getIKeyID"> Fetch iKey </button>
-
 <div>
   <p>
-  KeyVal: <span id="outKeyValID"></span>
+  <button id="fetchUKeyBut"> Fetch User Key </button>
+  <input id="uKeyOut" size="100"></span> </br>
+  <button id="fetchCKeyBut"> Fetch Cloud Key </button>
+  <input id="cKeyOut" size="100"></span>
   </p>
-   <p>
-  iKeyVal: <span id="outIKeyValID"></span>
-  </p>
-</div>
-
-
-<div>
-<button id="postMsgID"> Post Msg </button>
-<input id="msgInVal"> </input>
 </div>
 
 <div>
   <p>
-  SeqNum:<input id="seqNumID" size="6" ></input>
+  Msg: <input id="msgIn" size="40"></input> </br>
+  <button id="encMsgBut"> Enc </button><input id="msgEnc" size="100"></span> </br>
+  <button id="signMsgBut"> Sign </button><input id="msgSign" size="100"></span> </br>
+  <button id="postMsgBut"> Post Msg </button>
   </p>
 </div>
-
-<button id="getMsgID"> Fetch Msg </button>
 
 <div>
   <p>
-  MsgVal: <span id="outValID"></span>
+  SeqNum:<input id="seqNum" size="6" ></input>
   </p>
 </div>
 
-
+<div>
+  <p>
+  <button id="fetchMsgBut"> Fetch Msg </button> <input id="msgOut" size="100"></span> </br>
+  <button id="decryptMsgBut"> Decrypt </button> <input id="msgOutDecrypt" size="40"></span> </br>
+  </p>
+</div>
 
 </body>
 </html>
