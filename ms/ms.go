@@ -3,9 +3,9 @@ package main
 /*
 TODO
 
-HTML test page to post and retrieve msg 
-HTML test page doing the auth dance  
+Connect up seqNo generation to DB 
 Connect msg store to DB 
+HTML test page doing the auth dance  
 fetch integrity key from KS 
 client JS to sign the msg 
 verify signature of posted msg
