@@ -5,6 +5,7 @@ TODO
 
 - Need to sort out auth for iKey so that only user of key or cloud can read it 
 
+move the returned ID to be base32 or base64 encoded 
 
 move all prepares statements to DB setup time
 defer stmt.Close() for all statements
@@ -104,7 +105,11 @@ func getIKey(keyID int64 ) string {
 }
 
 func createKey(userID int64, keyVal string, iKeyVal string) int64 {
-	var keyID int64 = nonCryptoRand.Int63()
+	
+	//var max int64 =  1<<60; var min int64 = 1<<55; // for base 32 encoding 
+	var max int64 =  922337203685477585; var min int64 = 100000000000000000; // for base 10 encoding
+	var keyID int64 = min + nonCryptoRand.Int63n( max-min )
+	
 	var err error
 
 	var stmt [3]*sql.Stmt
