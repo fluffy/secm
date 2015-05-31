@@ -3,8 +3,6 @@ package main
 /*
 TODO
 
-Connect up seqNo generation to DB 
-Connect msg store to DB 
 HTML test page doing the auth dance  
 fetch integrity key from KS 
 client JS to sign the msg 
@@ -31,11 +29,18 @@ var ksURL string = "https://localhost:443/"
 
 var session *mgo.Session
 var msgCollection *mgo.Collection
+var countCollection *mgo.Collection
 
 type Message struct {
 	Id string
 	Data string
 }
+
+type Count struct {
+	KeyID int64
+	SeqNum int64
+}
+
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -86,7 +91,7 @@ func createMsgHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	msg := string(contents)
 
-	var seqNo int64 = 1 // TODO 
+	var seqNo int64 = getNextSeq(keyID)
 	var msgID string = strconv.FormatInt(keyID, 10) + "-" + strconv.FormatInt(seqNo, 10) 
 	
 	err = msgCollection.Insert( &Message{ msgID,msg } )
@@ -133,6 +138,28 @@ func getMsgHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w,  result.Data  )
 }
 
+func getNextSeq(keyID int64) (int64) {
+	var err error
+	doc := Count{}
+	
+	change := mgo.Change{
+        Update: bson.M{"$inc": bson.M{"seqnum": 1}},
+        ReturnNew: true,
+	}
+	_ , err = countCollection.Find( bson.M{"keyid": keyID} ).Apply(change, &doc)
+	if err != nil {
+		// key did not exist, create a new one
+		err = countCollection.Insert( &Count{ keyID,1 } )
+		if err != nil {
+			log.Fatal( "Could not create count" , err );
+			return 0
+		}
+		return 1
+	}
+
+	return doc.SeqNum;
+}
+
 func main() {
 	var err error
 	
@@ -150,7 +177,12 @@ func main() {
 	}
 	defer session.Close()
 	msgCollection = session.DB("secm").C("messages")
-		
+	countCollection = session.DB("secm").C("counts")
+
+	var keyID int64 = 12345
+	log.Println( "next seq=" , getNextSeq(keyID) )
+
+	
 	// set up the routes
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
