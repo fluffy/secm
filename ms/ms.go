@@ -2,6 +2,14 @@ package main
 
 /*
 TODO
+
+HTML test page to post and retrieve msg 
+HTML test page doing the auth dance  
+Connect msg store to DB 
+fetch integrity key from KS 
+client JS to sign the msg 
+verify signature of posted msg
+webhooks to let notification server know about new msg
 */
 
 import (
@@ -27,11 +35,10 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	type PageData struct {
-		Email string
-		UserID int64
+		ksURL string
 	}
 
-	data := PageData{ Email: "no", UserID:0  }
+	data := PageData{ ksURL: "http://ks.fluffy.im:8080/"  }
 	err = templates.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
