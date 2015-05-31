@@ -138,6 +138,32 @@ func getMsgHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w,  result.Data  )
 }
 
+
+func countHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	var keyID int64
+	keyID, err = strconv.ParseInt( vars["keyID"], 0, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	doc := Count{}
+	err = countCollection.Find( bson.M{"keyid": keyID} ).One(&doc)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	log.Println("GET count: keyID=", keyID )
+	
+	io.WriteString(w, "{ \"count\": "+ "\""+strconv.FormatInt(doc.SeqNum, 10)+ "\"" +" }")
+}
+
+
 func getNextSeq(keyID int64) (int64) {
 	var err error
 	doc := Count{}
@@ -187,6 +213,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
 	router.HandleFunc("/v1/ch/{keyID}", createMsgHandler).Methods("POST")
+	router.HandleFunc("/v1/ch/{keyID}/count", countHandler).Methods("GET")
 	router.HandleFunc("/v1/msg/{keyID}-{seqNum}", getMsgHandler).Methods("GET")
 
 	http.Handle("/", router)
