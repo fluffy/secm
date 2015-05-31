@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"strconv"
 	"io"
+	"io/ioutil"
 )
 
 var templates = template.Must(template.ParseFiles("index.html"))
@@ -54,8 +55,16 @@ func createMsgHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	var msg string = r.FormValue("msg")
+	
+	
+	defer r.Body.Close()
+	contents, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	msg := string(contents)
 
+	
 	var seqNo int64 = 1
 	
 	log.Println("POST createMsg: keyID=", keyID, "seqNo=", seqNo, "msg=", msg)
