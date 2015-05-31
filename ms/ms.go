@@ -71,17 +71,43 @@ func createMsgHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "{ \"msgID\": "+ "\""+strconv.FormatInt(keyID, 10)+"-"+strconv.FormatInt(seqNo, 10)+ "\"" +" }")
 }
 
+func getMsgHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	log.Println("In getMsgHandler")
+	
+	var keyID int64
+	keyID, err = strconv.ParseInt( vars["keyID"], 0, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	var seqNo int64
+	seqNo, err = strconv.ParseInt( vars["seqNo"], 0, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	
+	log.Println("GET msg: msgID=", keyID,"-",seqNo)
+
+	io.WriteString(w,   "{ \"msg\": \""  + "hello" + "\" " + "}" )
+}
+
 func main() {
 	// get all the configuration data
 	if len(os.Args) != 2 {
 		log.Fatal("must pass database hostname on CLI")
 	}
 
-		// set up the routes
+	// set up the routes
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
 	router.HandleFunc("/v1/msg/{keyID}", createMsgHandler).Methods("POST")
-	//router.HandleFunc("/v1/msg/{msgID}", getMsgHandler).Methods("GET")
+	router.HandleFunc("/v1/msg/{keyID}-{seqNo}", getMsgHandler).Methods("GET")
 
 	http.Handle("/", router)
 
