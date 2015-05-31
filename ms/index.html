@@ -2,7 +2,7 @@
 <html>
 <head>
 <title> Test MS Server </title>
-
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 </head>
 
 <body>
@@ -16,10 +16,94 @@ KS URL: {{ .KSUrl }}
 
 
 <div>
-<p>
-Hello
-</p>
+<button id="createID"> Create Key </button>
+<input id="inValID"> </input>
+<input id="inVal2ID"> </input>
 </div>
+
+<div>
+  <p>
+  KeyID:<input id="keyID"></input>
+  </p>
+</div>
+
+<button id="getKeyID"> Fetch Key </button>
+<button id="getIKeyID"> Fetch iKey </button>
+
+<div>
+  <p>
+  KeyVal: <span id="outKeyValID"></span>
+  </p>
+   <p>
+  iKeyVal: <span id="outIKeyValID"></span>
+  </p>
+</div>
+
+
+<div>
+<button id="postMsgID"> Post Msg </button>
+<input id="msgInVal"> </input>
+</div>
+
+<div>
+  <p>
+  MsgID:<input id="msgID"></input>
+  </p>
+</div>
+
+<button id="getMsgID"> Fetch Msg </button>
+
+<div>
+  <p>
+  MsgVal: <span id="outValID"></span>
+  </p>
+</div>
+
+
+<script>
+$(document).ready(function(){
+    $("#createID").click(function(){
+        $.post(  "{{ .KSUrl }}" + "v1/key",
+        {
+            keyVal: $("#inValID").val(),
+            iKeyVal: $("#inVal2ID").val()
+        },
+        function(data,status){
+           var d = jQuery.parseJSON( data );
+           $("#keyID").val( d.keyID );
+        });
+  });
+  $("#getKeyID").click(function(){
+        $.get( "{{ .KSUrl }}" + "v1/key/" + $("#keyID").val() ,
+        function(data,status){
+           $("#outKeyValID").text( data );
+        });
+    });
+  $("#getIKeyID").click(function(){
+        $.get( "{{ .KSUrl }}" + "v1/iKey/" + $("#keyID").val() ,
+        function(data,status){
+           $("#outIKeyValID").text( data );
+        });
+  });
+
+  $("#postMsgID").click(function(){
+        $.post("v1/msg/" + $("#keyID").val(),
+               $("#msgInVal").val(),
+        function(data,status){
+           var d = jQuery.parseJSON( data );
+           $("#msgID").val( d.msgID );
+        });
+  });
+
+  $("#getMsgID").click(function(){
+        $.get("v1/msg/" + $("#msgID").val() ,
+        function(data,status){
+           $("#outValID").text( data );
+        });
+  });
+});
+</script>
+
 
 </body>
 </html>
