@@ -30,6 +30,9 @@ if [ -z "$OS_REGION_NAME" ]; then
     exit;
 fi
 
+# TODO - check $RS_ACCOUNT_NUMBER and $RS_DOMAIN_ID exist
+
+# TODO - check that the files with cert, key, and chain exist 
 
 # flavors can be found at http://docs.rackspace.com/cas/api/v1.0/autoscale-devguide/content/server-flavors.html
 docker-machine create --driver rackspace --rackspace-flavor-id 2 "$MAC_NAME"
