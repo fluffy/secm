@@ -150,14 +150,7 @@ func main() {
 	}
 	defer session.Close()
 	msgCollection = session.DB("secm").C("messages")
-	
-	err = msgCollection.Insert( &Message{ "123-45","this is 123-45"} )
-	if err != nil {
-		log.Fatal(err)
-	}
-
-
-	
+		
 	// set up the routes
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainHandler).Methods("GET")
