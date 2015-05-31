@@ -61,10 +61,14 @@ cat ws/site.conf | \
     sed -e "s/OIDC_Crypto_Passphrase/$OIDC_Crypto_Passphrase/g" | \
     docker-machine ssh $MAC_NAME "cat > /root/data/site.conf"
 
-# start the varios machins
-# TODO - remove public port 
-docker `docker-machine config $MAC_NAME` run -p 5432:5432 --name my-postgres -e POSTGRES_PASSWORD=$SECM_DB_SECRET -d postgres
-sleep 5
+# start the varios machines
+# TODO - remove public ports
+docker `docker-machine config $MAC_NAME` run -p 5432:5432   --name my-postgres -e POSTGRES_PASSWORD=$SECM_DB_SECRET -d postgres
+docker `docker-machine config $MAC_NAME` run -p 27017:27017 --name my-mongo -d mongo
+docker `docker-machine config $MAC_NAME` run -p 6379:6379   --name my-redis -d redis
+docker `docker-machine config $MAC_NAME` run -p 9042:9042   --name my-cassandra -d cassandra
+sleep 10
+
 # TODO - remove public port
 docker `docker-machine config $MAC_NAME` run -p 8080:8080  --name="my-ks" --link my-postgres:db -d fluffy/ks:v1
 sleep 5
