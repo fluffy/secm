@@ -87,11 +87,14 @@ $(document).ready(function(){
   });
 
   $("#postMsgID").click(function(){
-        $.post("v1/msg/" + $("#keyID").val(),
-               $("#msgInVal").val(),
-        function(data,status){
-           var d = jQuery.parseJSON( data );
-           $("#msgID").val( d.msgID );
+        $.ajax({ type: "POST",
+                 url : "v1/msg/" + $("#keyID").val(),
+                 data: $("#msgInVal").val(),
+                 success: function(data,status){
+                     var d = jQuery.parseJSON( data );
+                     $("#msgID").val( d.msgID );
+                 },
+                 contentType: false
         });
   });
 
