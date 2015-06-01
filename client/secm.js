@@ -5,6 +5,7 @@
 /* TODO 
 add signing
 clean up 
+error check all JSON parse
 Make it all Promises
  */
 
@@ -183,6 +184,7 @@ Fluffy.SecM = (function () {
             true,
             ["encrypt","decrypt"]
         ).then(function(key) {
+            
             console.log( "Import Key: " + key );
             iKey = key;
             
@@ -195,10 +197,6 @@ Fluffy.SecM = (function () {
                 console.log( "problem exporting key: " + err );
             });
             
-            //data = new Uint8Array([ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] );  // new ArrayBuffer(8);
-            //data = new Uint8Array([0,1,2,3] );  // new ArrayBuffer(8);
-            //n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV 
-            //aad = new Uint8Array([ 1,2 ] );  // new ArrayBuffer(8);
             
             crypto.subtle.encrypt(
                 {
@@ -211,15 +209,7 @@ Fluffy.SecM = (function () {
                 data
             ).then(function(res) {
                 // res is the encrypted data with the tag concatinated to it 
-                console.log( "the encrypted stuff length: " + res.byteLength );
-                var lRes = new Uint8Array( res );
-                var s = "";
-                for ( var i in lRes)  {
-                    var v = lRes[i];
-                    s += (v < 16 ? "0" : "") + v.toString(16);
-                }
-                console.log( "the encrypted stuff: " + s );
-
+             
                 var result = {
                     iv: arrayToHexString(n),
                     ct: arrayToHexString(res)
@@ -237,19 +227,9 @@ Fluffy.SecM = (function () {
                     iKey,
                     lRes
                 ).then(function(dResR) {
-                    console.log( "the decrypted stuff length: " + dResR.byteLength );
-                    var dRes = new Uint8Array( dResR );
-                    var s = "";
-                    for ( var i in dRes)  {
-                        var v = dRes[i];
-                        s += (v < 10 ? "0" : "") + v.toString(16);
-                    }
-                    console.log( "the decrypted stuff: " + s );
-
+                   
                     var resString = arrayToString( dResR );
                     console.log( "decrypted: " + resString );
-
-                  
                     
                 }).catch( function(err) {
                     console.log( "problem decrypting : " + err );
