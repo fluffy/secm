@@ -3,7 +3,6 @@
 /* jshint strict: true, jquery: true */
 
 /* TODO 
-Make random IV 
 add signing
 clean up 
 Make it all Promises
@@ -104,13 +103,13 @@ Fluffy.SecM = (function () {
         var encObj = JSON.parse( encString ); // todo - move out and error check 
 
         var iKey=undefined;
-        var n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV 
-        //var n;
+        //var n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV 
+        //var n = crypto.subtle.getRandomValues(new Uint8Array(12));
         var aad = new Uint8Array( [] );
 
 
         var lRes = hexStringToArray( encObj.ct );
-        n = hexStringToArray( encObj.iv );
+        var n = hexStringToArray( encObj.iv );
         
         crypto.subtle.importKey(
             "jwk",
@@ -173,8 +172,8 @@ Fluffy.SecM = (function () {
 
         var iKey=undefined;
         var data = stringToArray( dataString );
-        var n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV 
-        //var n;
+        //var n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV
+        var n = crypto.getRandomValues(new Uint8Array(12));
         var aad = new Uint8Array( [] );
         
         crypto.subtle.importKey(
