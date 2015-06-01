@@ -3,8 +3,10 @@
 /* jshint strict: true, jquery: true */
 
 /* TODO 
+Make random IV 
+add signing
+clean up 
 Make it all Promises
-
  */
 
 var Fluffy;
@@ -18,6 +20,12 @@ Fluffy.SecM = (function () {
             alert("No WebCrypto subtle support");
             return;
         }
+
+        // TODO cleanup 
+        //var t = arrayToHexString( stringToArray( "abc" ) );
+        //console.log( "abc as hex string: " + t );
+        // console.log( "hex string back to string: " + arrayToString( hexStringToArray( t ) ) );
+        
     }
 
     function arrayToString(a) {
@@ -32,6 +40,18 @@ Fluffy.SecM = (function () {
             s += (v < 16 ? "0" : "") + v.toString(16);
         }
         return s;
+    }
+
+    function hexStringToArray(s) {
+        console.assert( s.length%2 === 0 , "string must be of even length to covert" );
+        var i;
+        var l = s.length/2;
+        var ret = new ArrayBuffer( l );
+        var view = new Uint8Array( ret );
+        for (  i=0; i<l; i++) {
+            view[i] = parseInt( s.substring( i*2, (i+1)*2 ), 16)
+        }
+        return ret;
     }
     
     function stringToArray(s) {
@@ -77,11 +97,73 @@ Fluffy.SecM = (function () {
         f( dataString );
     }
 
-    function decrypt( dataString, jwkObj, f ) {
-        console.assert( $.type( dataString ) === "string", "encrypt takes string");
+    function decrypt( encString, jwkObj, f ) {
+        console.assert( $.type( encString ) === "string", "encrypt takes string");
         console.assert( $.type( jwkObj ) === "object", "encrypt takes string");
 
-         f( dataString );
+        var encObj = JSON.parse( encString ); // todo - move out and error check 
+
+        var iKey=undefined;
+        var n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV 
+        //var n;
+        var aad = new Uint8Array( [] );
+
+
+        var lRes = hexStringToArray( encObj.ct );
+        n = hexStringToArray( encObj.iv );
+        
+        crypto.subtle.importKey(
+            "jwk",
+            jwkObj, 
+            { name : "AES-GCM", length:128 },
+            true,
+            ["encrypt","decrypt"]
+        ).then(function(key) {
+            console.log( "Import Key: " + key );
+            iKey = key;
+            
+            crypto.subtle.exportKey(
+                "jwk",
+                iKey
+            ).then(function(ekey) {
+                console.log( "the imported key looks like: " + JSON.stringify(ekey) );
+            }).catch( function(err) {
+                console.log( "problem exporting key: " + err );
+            });
+            
+            crypto.subtle.decrypt(
+                {
+                    name : "AES-GCM" ,
+                    additionalData: aad, // optional 
+		            tagLength: 32, // 128,104,32,64,96,112,120  // optional (128 or missing , len=32 ) (32, len=20)
+                    iv: n // required 
+                },
+                iKey,
+                lRes
+            ).then(function(dResR) {
+                    
+                console.log( "the decrypted stuff length: " + dResR.byteLength );
+                var dRes = new Uint8Array( dResR );
+                var s = "";
+                for ( var i in dRes)  {
+                    var v = dRes[i];
+                    s += (v < 10 ? "0" : "") + v.toString(16);
+                }
+                console.log( "the decrypted stuff: " + s );
+                
+                var resString = arrayToString( dResR );
+                console.log( "decrypted: " + resString );
+                
+                f( resString );        
+                
+            }).catch( function(err) {
+                console.log( "problem decrypting : " + err );
+            });
+            
+        }).catch( function(err) {
+            console.log( "problem importing key: " + err );
+            console.log( "jwk=" + JSON.stringify(jwkObj) );
+        });
     }
 
     
@@ -89,7 +171,7 @@ Fluffy.SecM = (function () {
         console.assert( $.type( dataString ) === "string", "encrypt takes string");
         console.assert( $.type( jwkObj ) === "object", "encrypt takes string");
 
-                var iKey=undefined;
+        var iKey=undefined;
         var data = stringToArray( dataString );
         var n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV 
         //var n;
@@ -202,6 +284,7 @@ $(document).ready(function(){
 
     $("#keyID").val( "758614435099350414" ); // TODO remove 
     $("#msgIn").val( "abc" ); // TODO remove
+    $("#seqNum").val( "2" );// TODO remove
     
     $("#genBut").click(function(){
         Fluffy.SecM.genKey( function(key) { $("#uKeyIn").val( key ) } );
@@ -272,10 +355,16 @@ $(document).ready(function(){
     
     $("#decryptMsgBut").click(function(){
        // $("#msgOutDecrypt").val(  "decrypt-" + $("#msgOut").val() ) // TODO remove
-        var jwkObj = JSON.parse( $("#cKeyOut").val() );
+        var jwkObj = {}
+        try {
+            jwkObj = JSON.parse( $("#uKeyOut").val() );
+        } catch (err) {
+            console.log( "Error parsing JSON=" + $("#uKeyOut").val() );
+        }
+        
         var data = $("#msgOut").val();
         
-        Fluffy.SecM.sign( data, jwkObj, function( s ) { $("#msgOutDecrypt").val( s ); } );
+        Fluffy.SecM.decrypt( data, jwkObj, function( s ) { $("#msgOutDecrypt").val( s ); } );
     });
                          
 });
