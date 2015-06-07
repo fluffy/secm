@@ -90,6 +90,72 @@ Fluffy.SecM = (function () {
             });
     }
 
+    function checkSign( encString, jwkObj, f ) {
+        console.assert( $.type( encString ) === "string", "encrypt takes string");
+        console.assert( $.type( jwkObj ) === "object", "encrypt takes string");
+
+        var encObj = JSON.parse( encString ); // todo - move out and error check 
+
+        var iKey=undefined;
+
+        var aad =stringToArray( encObj.authData );
+        var lRes = hexStringToArray( encObj.tag );
+        var n = hexStringToArray( encObj.iv );
+        
+        crypto.subtle.importKey(
+            "jwk",
+            jwkObj, 
+            { name : "AES-GCM", length:128 },
+            true,
+            ["encrypt","decrypt"]
+        ).then(function(key) {
+            console.log( "Import Key: " + key );
+            iKey = key;
+            
+            crypto.subtle.exportKey(
+                "jwk",
+                iKey
+            ).then(function(ekey) {
+                console.log( "the imported sig key looks like: " + JSON.stringify(ekey) );
+            }).catch( function(err) {
+                console.log( "problem exporting sig key: " + err );
+            });
+            
+            crypto.subtle.decrypt(
+                {
+                    name : "AES-GCM" ,
+                    additionalData: aad, // optional 
+		            tagLength: 128, // 128,104,32,64,96,112,120  // optional (128 or missing , len=32 ) (32, len=20)
+                    iv: n // required 
+                },
+                iKey,
+                lRes
+            ).then(function(dResR) {
+                    
+                console.log( "the sig decrypted stuff length: " + dResR.byteLength );
+                var dRes = new Uint8Array( dResR );
+                var s = "";
+                for ( var i in dRes)  {
+                    var v = dRes[i];
+                    s += (v < 10 ? "0" : "") + v.toString(16);
+                }
+                console.log( "the sig decrypted stuff: " + s );
+                
+                var resString = arrayToString( dResR );
+                console.log( "sig decrypted: " + resString );
+                
+                f( encObj.authData );        
+                
+            }).catch( function(err) {
+                console.log( "problem decrypting sig: " + err );
+            });
+            
+        }).catch( function(err) {
+            console.log( "problem importing sig key: " + err );
+            console.log( "sig jwk=" + JSON.stringify(jwkObj) );
+        });
+    }
+
     function decrypt( encString, jwkObj, f ) {
         console.assert( $.type( encString ) === "string", "encrypt takes string");
         console.assert( $.type( jwkObj ) === "object", "encrypt takes string");
@@ -97,10 +163,7 @@ Fluffy.SecM = (function () {
         var encObj = JSON.parse( encString ); // todo - move out and error check 
 
         var iKey=undefined;
-        //var n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV 
-        //var n = crypto.subtle.getRandomValues(new Uint8Array(12));
         var aad = new Uint8Array( [] );
-
 
         var lRes = hexStringToArray( encObj.ct );
         var n = hexStringToArray( encObj.iv );
@@ -286,6 +349,7 @@ Fluffy.SecM = (function () {
         genKey: genKey,
         encrypt: encrypt,
         sign: sign,
+        checkSign: checkSign,
         decrypt: decrypt
     };
     
@@ -298,7 +362,7 @@ $(document).ready(function(){
 
     $("#keyID").val( "758614435099350414" ); // TODO remove 
     $("#msgIn").val( "abc" ); // TODO remove
-    $("#seqNum").val( "2" );// TODO remove
+    $("#seqNum").val( "7" );// TODO remove
     
     $("#genBut").click(function(){
         Fluffy.SecM.genKey( function(key) { $("#uKeyIn").val( key ) } );
@@ -341,7 +405,6 @@ $(document).ready(function(){
     });
     
     $("#signMsgBut").click(function(){
-        //$("#msgSign").val(  $("#msgEnc").val() ) // TODO remove
         var jwkObj = JSON.parse( $("#cKeyOut").val() );
         var data = $("#msgEnc").val();
         
@@ -366,9 +429,22 @@ $(document).ready(function(){
                    $("#msgOut").val( data );
                });
     });
+
     
+    $("#unSignMsgBut").click(function(){
+        var jwkObj = {}
+        try {
+            jwkObj = JSON.parse( $("#cKeyOut").val() );
+        } catch (err) {
+            console.log( "Error parsing JSON=" + $("#cKeyOut").val() );
+        }
+        
+        var data = $("#msgOut").val();
+        
+        Fluffy.SecM.checkSign( data, jwkObj, function( s ) { $("#msgEncOut").val( s ); } );
+    });
+
     $("#decryptMsgBut").click(function(){
-       // $("#msgOutDecrypt").val(  "decrypt-" + $("#msgOut").val() ) // TODO remove
         var jwkObj = {}
         try {
             jwkObj = JSON.parse( $("#uKeyOut").val() );
@@ -376,7 +452,7 @@ $(document).ready(function(){
             console.log( "Error parsing JSON=" + $("#uKeyOut").val() );
         }
         
-        var data = $("#msgOut").val();
+        var data = $("#msgEncOut").val();
         
         Fluffy.SecM.decrypt( data, jwkObj, function( s ) { $("#msgOutDecrypt").val( s ); } );
     });
