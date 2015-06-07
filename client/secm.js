@@ -27,12 +27,12 @@ Fluffy.SecM = (function () {
 
     function arrayToHexString(a) {
         var lRes = new Uint8Array(a);
-        var s = "";
+        var ret = "";
         for (var i in lRes) {
             var v = lRes[i];
-            s += (v < 16 ? "0" : "") + v.toString(16);
+            ret += (v < 16 ? "0" : "") + v.toString(16);
         }
-        return s;
+        return ret;
     }
 
     function hexStringToArray(s) {
@@ -65,16 +65,12 @@ Fluffy.SecM = (function () {
             true, ["encrypt", "decrypt"]
         ).then(
             function (key) {
-                var myKey = key;
-                console.log("gen key: " + key);
-
                 crypto.subtle.exportKey(
                     "jwk",
-                    myKey
-                ).then(function (ekey) {
-                    var sKey = JSON.stringify(ekey);
-                    console.log("Exported Key: " + sKey);
-                    f(sKey);
+                    key
+                ).then(function (expKey) {
+                    var stringKey = JSON.stringify(expKey);
+                    f(stringKey);
                 }).
                 catch (function (err) {
                     console.log("problem exporting key: " + err);
@@ -91,9 +87,6 @@ Fluffy.SecM = (function () {
         console.assert($.type(jwkObj) === "object", "encrypt takes string");
 
         var encObj = JSON.parse(encString); // todo - move out and error check 
-
-        var iKey;
-
         var aad = stringToArray(encObj.authData);
         var tag = hexStringToArray(encObj.tag);
         var iv = hexStringToArray(encObj.iv);
@@ -115,10 +108,7 @@ Fluffy.SecM = (function () {
                 key,
                 tag
             ).then(function (dResR) {
-                //console.log("sig OK for: " + encObj.authData);
-
                 f(encObj.authData);
-
             }).
             catch (function (err) {
                 console.log("problem checking sig: " + err);
@@ -126,7 +116,7 @@ Fluffy.SecM = (function () {
 
         }).
         catch (function (err) {
-            console.log("problem importing sig key: " + err + " jwk=" + JSON.stringify(jwkObj) );
+            console.log("problem importing sig key: " + err);
         });
     }
 
@@ -157,8 +147,6 @@ Fluffy.SecM = (function () {
                 cipherText
             ).then(function (result) {
                 var resString = arrayToString(result);
-                console.log("decrypted: " + resString);
-
                 f(resString);
 
             }).
@@ -168,7 +156,7 @@ Fluffy.SecM = (function () {
 
         }).
         catch (function (err) {
-            console.log("problem importing decrypt key: " + err + " jwk=" + JSON.stringify(jwkObj) );
+            console.log("problem importing decrypt key: " + err);
         });
     }
 
