@@ -90,13 +90,6 @@ Fluffy.SecM = (function () {
             });
     }
 
-    function sign( dataString, jwkObj, f ) {
-        console.assert( $.type( dataString ) === "string", "encrypt takes string");
-        console.assert( $.type( jwkObj ) === "object", "encrypt takes string");
-
-        f( dataString );
-    }
-
     function decrypt( encString, jwkObj, f ) {
         console.assert( $.type( encString ) === "string", "encrypt takes string");
         console.assert( $.type( jwkObj ) === "object", "encrypt takes string");
@@ -216,24 +209,6 @@ Fluffy.SecM = (function () {
                 };
                 
                 f( JSON.stringify(result) );
-                
-                crypto.subtle.decrypt(
-                    {
-                        name : "AES-GCM" ,
-                        additionalData: aad, // optional 
-		                tagLength: 32, // 128,104,32,64,96,112,120  // optional (128 or missing , len=32 ) (32, len=20)
-                        iv: n // required 
-                    },
-                    iKey,
-                    lRes
-                ).then(function(dResR) {
-                   
-                    var resString = arrayToString( dResR );
-                    console.log( "decrypted: " + resString );
-                    
-                }).catch( function(err) {
-                    console.log( "problem decrypting : " + err );
-                });
                               
             }).catch( function(err) {
                 console.log( "problem encrypting : " + err );
@@ -242,10 +217,70 @@ Fluffy.SecM = (function () {
         }).catch( function(err) {
             console.log( "problem importing key: " + err );
         });
+    }
 
+    function sign( dataString, jwkObj, f ) {
+        console.assert( $.type( dataString ) === "string", "encrypt takes string");
+        console.assert( $.type( jwkObj ) === "object", "encrypt takes string");
+
+        var iKey=undefined;
+        var aad = stringToArray( dataString );
+        //var n = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12]); // 96 bit IV
+        var n = crypto.getRandomValues(new Uint8Array(12));
+        var data = new Uint8Array( [] );
+        
+        crypto.subtle.importKey(
+            "jwk",
+            jwkObj, 
+            { name : "AES-GCM", length:128 },
+            true,
+            ["encrypt","decrypt"]
+        ).then(function(key) {
+            
+            console.log( "Import Key: " + key );
+            iKey = key;
+            
+            crypto.subtle.exportKey(
+                "jwk",
+                iKey
+            ).then(function(ekey) {
+                console.log( "the imported key looks like: " + JSON.stringify(ekey) );
+            }).catch( function(err) {
+                console.log( "problem exporting key: " + err );
+            });
+            
+            
+            crypto.subtle.encrypt(
+                {
+                    name : "AES-GCM" ,
+                    additionalData: aad, // optional 
+		            tagLength: 128, // 32,64,96,104,112,120,128
+                    iv: n // required 
+                },
+                iKey,
+                data
+            ).then(function(res) {
+                // res is the encrypted data with the tag concatinated to it 
+             
+                var result = {
+                    iv: arrayToHexString(n),
+                    authData: dataString,
+                    tag: arrayToHexString(res)
+                };
+                
+                f( JSON.stringify(result) );
+                              
+            }).catch( function(err) {
+                console.log( "problem encrypting sig: " + err );
+            });
+            
+        }).catch( function(err) {
+            console.log( "problem importing key for sig: " + err );
+        });
 
     }
-    
+
+
     var publicExport = {
         setup: setup,
         genKey: genKey,
