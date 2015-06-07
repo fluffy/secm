@@ -3,9 +3,7 @@
 /* jshint strict: true, jquery: true */
 
 /* TODO 
-clean up 
 error check all JSON parse
-Make it all Promises
  */
 
 var Fluffy;
@@ -57,32 +55,36 @@ Fluffy.SecM = (function () {
         return ret;
     }
 
-    function genKey(f) {
-        crypto.subtle.generateKey({
+    function genKey() {
+        return new Promise(function(resolve, reject){
+            crypto.subtle.generateKey({
                 name: "AES-GCM",
                 length: 128
-            },
-            true, ["encrypt", "decrypt"]
-        ).then(
-            function (key) {
-                crypto.subtle.exportKey(
-                    "jwk",
-                    key
-                ).then(function (expKey) {
-                    var stringKey = JSON.stringify(expKey);
-                    f(stringKey);
+            }, true, ["encrypt", "decrypt"] ).then(
+                function (key) {
+                    crypto.subtle.exportKey(
+                        "jwk",
+                        key
+                    ).then(function (expKey) {
+                        var stringKey = JSON.stringify(expKey);
+                        resolve(stringKey);
+                    }).
+                        catch (function (err) {
+                            console.log("problem exporting key: " + err);
+                            reject( Error("Problem exporting key" + err) );
+                        });
+                    
                 }).
                 catch (function (err) {
-                    console.log("problem exporting key: " + err);
+                    console.log("problem generating key: " + err);
+                    reject( Error("Problem generating key" + err ) );
                 });
-
-            }).
-        catch (function (err) {
-            console.log("problem generating key: " + err);
         });
     }
 
-    function checkSign(encString, jwkObj, f) {
+    function checkSign(encString, jwkObj) {
+        return new Promise(function(resolve, reject){
+            
         console.assert($.type(encString) === "string", "encrypt takes string");
         console.assert($.type(jwkObj) === "object", "encrypt takes string");
 
@@ -108,19 +110,24 @@ Fluffy.SecM = (function () {
                 key,
                 tag
             ).then(function (dResR) {
-                f(encObj.authData);
+                resolve(encObj.authData);
             }).
             catch (function (err) {
                 console.log("problem checking sig: " + err);
+                reject( Error("Problem checking signature" + err ) );
             });
 
         }).
         catch (function (err) {
             console.log("problem importing sig key: " + err);
+            reject( Error("Problem importing signature key" + err ) );
+        });
         });
     }
 
-    function decrypt(encString, jwkObj, f) {
+    function decrypt(encString, jwkObj) {
+             return new Promise(function(resolve, reject){
+   
         console.assert($.type(encString) === "string", "encrypt takes string");
         console.assert($.type(jwkObj) === "object", "encrypt takes string");
 
@@ -147,20 +154,25 @@ Fluffy.SecM = (function () {
                 cipherText
             ).then(function (result) {
                 var resString = arrayToString(result);
-                f(resString);
+                resolve(resString);
 
             }).
             catch (function (err) {
                 console.log("problem decrypting : " + err);
+                reject( Error( "problem decrypting : " + err) );
             });
 
         }).
         catch (function (err) {
             console.log("problem importing decrypt key: " + err);
+                reject( Error("problem importing decrypt key: " + err ) );
         });
+             });
     }
 
-    function encrypt(dataString, jwkObj, f) {
+    function encrypt(dataString, jwkObj) {
+             return new Promise(function(resolve, reject){
+   
         console.assert($.type(dataString) === "string", "encrypt takes string");
         console.assert($.type(jwkObj) === "object", "encrypt takes string");
 
@@ -192,20 +204,27 @@ Fluffy.SecM = (function () {
                     ct: arrayToHexString(encText)
                 };
 
-                f(JSON.stringify(result));
+                resolve(JSON.stringify(result));
 
             }).
             catch (function (err) {
                 console.log("problem encrypting: " + err);
+                                reject( Error( "problem encrypting: " + err) );
+
             });
 
         }).
         catch (function (err) {
             console.log("problem importing encrypt key: " + err);
+                            reject( Error( "problem importing encrypt key: " + err) );
+
         });
+             });
     }
 
-    function sign(dataString, jwkObj, f) {
+    function sign(dataString, jwkObj) {
+             return new Promise(function(resolve, reject){
+   
         console.assert($.type(dataString) === "string", "encrypt takes string");
         console.assert($.type(jwkObj) === "object", "encrypt takes string");
 
@@ -237,18 +256,20 @@ Fluffy.SecM = (function () {
                     tag: arrayToHexString(res)
                 };
 
-                f(JSON.stringify(result));
+                resolve(JSON.stringify(result));
 
             }).
             catch (function (err) {
                 console.log("problem encrypting for signature: " + err);
+                reject( Error( "problem encrypting for signature: " + err) );
             });
 
         }).
         catch (function (err) {
             console.log("problem importing key for signature: " + err);
+                reject( Error( "problem importing key for signature: " + err) );
         });
-
+             });
     }
 
     var publicExport = {
@@ -272,10 +293,12 @@ $(document).ready(function () {
     $("#seqNum").val("7"); // TODO remove
 
     $("#genBut").click(function () {
-        Fluffy.SecM.genKey(function (key) {
+        Fluffy.SecM.genKey().then(function (key) {
             $("#uKeyIn").val(key);
+        }).catch( function (err) {
+            console.log("key gen error =" , err );
         });
-        Fluffy.SecM.genKey(function (key) {
+        Fluffy.SecM.genKey().then(function (key) {
             $("#cKeyIn").val(key);
         });
     });
@@ -309,7 +332,7 @@ $(document).ready(function () {
         var jwkObj = JSON.parse($("#uKeyOut").val());
         var data = $("#msgIn").val();
 
-        Fluffy.SecM.encrypt(data, jwkObj, function (s) {
+        Fluffy.SecM.encrypt(data, jwkObj).then( function (s) {
             $("#msgEnc").val(s);
         });
     });
@@ -318,7 +341,7 @@ $(document).ready(function () {
         var jwkObj = JSON.parse($("#cKeyOut").val());
         var data = $("#msgEnc").val();
 
-        Fluffy.SecM.sign(data, jwkObj, function (s) {
+        Fluffy.SecM.sign(data, jwkObj).then( function (s) {
             $("#msgSign").val(s);
         });
     });
@@ -353,7 +376,7 @@ $(document).ready(function () {
 
         var data = $("#msgOut").val();
 
-        Fluffy.SecM.checkSign(data, jwkObj, function (s) {
+        Fluffy.SecM.checkSign(data, jwkObj).then( function (s) {
             $("#msgEncOut").val(s);
         });
     });
@@ -368,7 +391,7 @@ $(document).ready(function () {
 
         var data = $("#msgEncOut").val();
 
-        Fluffy.SecM.decrypt(data, jwkObj, function (s) {
+        Fluffy.SecM.decrypt(data, jwkObj).then( function (s) {
             $("#msgOutDecrypt").val(s);
         });
     });
