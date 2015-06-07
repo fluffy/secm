@@ -268,61 +268,61 @@ Fluffy.SecM = (function() {
         });
     }
 
-    function closeMsg( data, encKey, signKey ) {
+    function closeMsg(data, encKey, signKey) {
         return new Promise(function(resolve, reject) {
-            
+
             var jwkEnc = {};
             try {
-                jwkEnc = JSON.parse( encKey);
+                jwkEnc = JSON.parse(encKey);
             } catch (err) {
-                    console.log("Error parsing encKey JSON=" +encKey);
-                reject( "Error parsing encKey JSON=" +encKey);
+                console.log("Error parsing encKey JSON=" + encKey);
+                reject("Error parsing encKey JSON=" + encKey);
             }
-            
-            Fluffy.SecM.encrypt(data, jwkEnc).then(function( encData ) {
-                
+
+            Fluffy.SecM.encrypt(data, jwkEnc).then(function(encData) {
+
                 var jwkSign = {};
                 try {
-                    jwkSign = JSON.parse( signKey );
+                    jwkSign = JSON.parse(signKey);
                 } catch (err) {
-                    console.log("Error parsing sign key JSON=" + signKey );
-                    reject( "Error parsing sign key JSON=" + signKey  );
+                    console.log("Error parsing sign key JSON=" + signKey);
+                    reject("Error parsing sign key JSON=" + signKey);
                 }
-                
+
                 Fluffy.SecM.sign(encData, jwkSign).then(function(signedData) {
-                    resolve( signedData );
+                    resolve(signedData);
                 });
-                
+
             });
-            
+
         });
     }
 
-    function openMsg( encSignedData, encKey, signKey ) {
+    function openMsg(encSignedData, encKey, signKey) {
         return new Promise(function(resolve, reject) {
-            
+
             var jwkSign = {};
             try {
-                jwkSign = JSON.parse( signKey );
+                jwkSign = JSON.parse(signKey);
             } catch (err) {
-                console.log("Error parsing sign key JSON=" + signKey );
-                reject( "Error parsing sign key JSON=" + signKey  );
+                console.log("Error parsing sign key JSON=" + signKey);
+                reject("Error parsing sign key JSON=" + signKey);
             }
-           
-            Fluffy.SecM.checkSign(encSignedData, jwkSign).then(function( encData ) {
+
+            Fluffy.SecM.checkSign(encSignedData, jwkSign).then(function(encData) {
                 var jwkEnc = {};
                 try {
-                    jwkEnc = JSON.parse( encKey);
+                    jwkEnc = JSON.parse(encKey);
                 } catch (err) {
-                    console.log("Error parsing encKey JSON=" +encKey);
-                    reject( "Error parsing encKey JSON=" +encKey);
+                    console.log("Error parsing encKey JSON=" + encKey);
+                    reject("Error parsing encKey JSON=" + encKey);
                 }
-                
+
                 Fluffy.SecM.decrypt(encData, jwkEnc).then(function(data) {
-                    resolve( data );
+                    resolve(data);
                 });
             });
-            
+
         });
     }
 
@@ -399,13 +399,13 @@ $(document).ready(function() {
             $("#msgSign").val(s);
         });
     });
-    
+
     $("#closeBut").click(function() {
         var encKey = $("#uKeyOut").val();
         var signKey = $("#cKeyOut").val();
         var data = $("#msgIn").val();
 
-        Fluffy.SecM.closeMsg(data, encKey, signKey ).then(function(s) {
+        Fluffy.SecM.closeMsg(data, encKey, signKey).then(function(s) {
             $("#msgSign").val(s);
         });
     });
@@ -423,7 +423,7 @@ $(document).ready(function() {
         });
     });
 
-    
+
 
     $("#fetchMsgBut").click(function() {
         $.get($("#msUrl").val() + "v1/msg/" + $("#keyID").val() + "-" + $("#seqNum").val(),
@@ -467,9 +467,9 @@ $(document).ready(function() {
         var signKey = $("#cKeyOut").val();
         var encData = $("#msgOut").val();
 
-        Fluffy.SecM.openMsg(encData, encKey, signKey ).then(function(s) {
+        Fluffy.SecM.openMsg(encData, encKey, signKey).then(function(s) {
             $("#msgOutDecrypt").val(s);
         });
     });
-    
+
 });
