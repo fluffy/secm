@@ -95,8 +95,8 @@ Fluffy.SecM = (function () {
         var iKey;
 
         var aad = stringToArray(encObj.authData);
-        var lRes = hexStringToArray(encObj.tag);
-        var n = hexStringToArray(encObj.iv);
+        var tag = hexStringToArray(encObj.tag);
+        var iv = hexStringToArray(encObj.iv);
 
         crypto.subtle.importKey(
             "jwk",
@@ -106,42 +106,27 @@ Fluffy.SecM = (function () {
             },
             true, ["encrypt", "decrypt"]
         ).then(function (key) {
-            console.log("Import Key: " + key);
-            iKey = key;
-
             crypto.subtle.decrypt({
                     name: "AES-GCM",
                     additionalData: aad, // optional 
                     tagLength: 128, // 128,104,32,64,96,112,120  // optional (128 or missing , len=32 ) (32, len=20)
-                    iv: n // required 
+                    iv: iv // required 
                 },
-                iKey,
-                lRes
+                key,
+                tag
             ).then(function (dResR) {
-
-                console.log("the sig decrypted stuff length: " + dResR.byteLength);
-                var dRes = new Uint8Array(dResR);
-                var s = "";
-                for (var i in dRes) {
-                    var v = dRes[i];
-                    s += (v < 10 ? "0" : "") + v.toString(16);
-                }
-                console.log("the sig decrypted stuff: " + s);
-
-                var resString = arrayToString(dResR);
-                console.log("sig decrypted: " + resString);
+                //console.log("sig OK for: " + encObj.authData);
 
                 f(encObj.authData);
 
             }).
             catch (function (err) {
-                console.log("problem decrypting sig: " + err);
+                console.log("problem checking sig: " + err);
             });
 
         }).
         catch (function (err) {
-            console.log("problem importing sig key: " + err);
-            console.log("sig jwk=" + JSON.stringify(jwkObj));
+            console.log("problem importing sig key: " + err + " jwk=" + JSON.stringify(jwkObj) );
         });
     }
 
@@ -150,12 +135,9 @@ Fluffy.SecM = (function () {
         console.assert($.type(jwkObj) === "object", "encrypt takes string");
 
         var encObj = JSON.parse(encString); // todo - move out and error check 
-
-        var iKey;
         var aad = new Uint8Array([]);
-
-        var lRes = hexStringToArray(encObj.ct);
-        var n = hexStringToArray(encObj.iv);
+        var cipherText = hexStringToArray(encObj.ct);
+        var iv = hexStringToArray(encObj.iv);
 
         crypto.subtle.importKey(
             "jwk",
@@ -165,29 +147,16 @@ Fluffy.SecM = (function () {
             },
             true, ["encrypt", "decrypt"]
         ).then(function (key) {
-            console.log("Import Key: " + key);
-            iKey = key;
-
             crypto.subtle.decrypt({
                     name: "AES-GCM",
                     additionalData: aad, // optional 
                     tagLength: 32, // 128,104,32,64,96,112,120  // optional (128 or missing , len=32 ) (32, len=20)
-                    iv: n // required 
+                    iv: iv // required 
                 },
-                iKey,
-                lRes
-            ).then(function (dResR) {
-
-                console.log("the decrypted stuff length: " + dResR.byteLength);
-                var dRes = new Uint8Array(dResR);
-                var s = "";
-                for (var i in dRes) {
-                    var v = dRes[i];
-                    s += (v < 10 ? "0" : "") + v.toString(16);
-                }
-                console.log("the decrypted stuff: " + s);
-
-                var resString = arrayToString(dResR);
+                key,
+                cipherText
+            ).then(function (result) {
+                var resString = arrayToString(result);
                 console.log("decrypted: " + resString);
 
                 f(resString);
@@ -199,19 +168,16 @@ Fluffy.SecM = (function () {
 
         }).
         catch (function (err) {
-            console.log("problem importing key: " + err);
-            console.log("jwk=" + JSON.stringify(jwkObj));
+            console.log("problem importing decrypt key: " + err + " jwk=" + JSON.stringify(jwkObj) );
         });
     }
-
 
     function encrypt(dataString, jwkObj, f) {
         console.assert($.type(dataString) === "string", "encrypt takes string");
         console.assert($.type(jwkObj) === "object", "encrypt takes string");
 
-        var iKey;
         var data = stringToArray(dataString);
-        var n = crypto.getRandomValues(new Uint8Array(12));
+        var iv = crypto.getRandomValues(new Uint8Array(12));
         var aad = new Uint8Array([]);
 
         crypto.subtle.importKey(
@@ -222,36 +188,32 @@ Fluffy.SecM = (function () {
             },
             true, ["encrypt", "decrypt"]
         ).then(function (key) {
-
-            console.log("Import Key: " + key);
-            iKey = key;
-
             crypto.subtle.encrypt({
                     name: "AES-GCM",
                     additionalData: aad, // optional 
                     tagLength: 32, // 32,64,96,104,112,120,128
-                    iv: n // required 
+                    iv: iv // required 
                 },
-                iKey,
+                key,
                 data
-            ).then(function (res) {
-                // res is the encrypted data with the tag concatinated to it 
+            ).then(function (encText) {
+                // encText is the encrypted data with the tag concatinated to it 
 
                 var result = {
-                    iv: arrayToHexString(n),
-                    ct: arrayToHexString(res)
+                    iv: arrayToHexString(iv),
+                    ct: arrayToHexString(encText)
                 };
 
                 f(JSON.stringify(result));
 
             }).
             catch (function (err) {
-                console.log("problem encrypting : " + err);
+                console.log("problem encrypting: " + err);
             });
 
         }).
         catch (function (err) {
-            console.log("problem importing key: " + err);
+            console.log("problem importing encrypt key: " + err);
         });
     }
 
@@ -259,9 +221,8 @@ Fluffy.SecM = (function () {
         console.assert($.type(dataString) === "string", "encrypt takes string");
         console.assert($.type(jwkObj) === "object", "encrypt takes string");
 
-        var iKey;
         var aad = stringToArray(dataString);
-        var n = crypto.getRandomValues(new Uint8Array(12));
+        var iv = crypto.getRandomValues(new Uint8Array(12));
         var data = new Uint8Array([]);
 
         crypto.subtle.importKey(
@@ -272,22 +233,18 @@ Fluffy.SecM = (function () {
             },
             true, ["encrypt", "decrypt"]
         ).then(function (key) {
-
-            console.log("Import Key: " + key);
-            iKey = key;
-
             crypto.subtle.encrypt({
                     name: "AES-GCM",
                     additionalData: aad, // optional 
                     tagLength: 128, // 32,64,96,104,112,120,128
-                    iv: n // required 
+                    iv: iv // required 
                 },
-                iKey,
+                key,
                 data
             ).then(function (res) {
                 // res is the encrypted data with the tag concatinated to it 
                 var result = {
-                    iv: arrayToHexString(n),
+                    iv: arrayToHexString(iv),
                     authData: dataString,
                     tag: arrayToHexString(res)
                 };
@@ -296,12 +253,12 @@ Fluffy.SecM = (function () {
 
             }).
             catch (function (err) {
-                console.log("problem encrypting sig: " + err);
+                console.log("problem encrypting for signature: " + err);
             });
 
         }).
         catch (function (err) {
-            console.log("problem importing key for sig: " + err);
+            console.log("problem importing key for signature: " + err);
         });
 
     }
