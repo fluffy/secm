@@ -1,0 +1,67 @@
+
+
+typedef ByteString UserID;
+typedef ByteString ChannelID;
+typedef ByteString KeyID;
+typedef long ChannelSeq;
+
+enum MsgType {
+     "bad",
+     "PublicUserInfo",
+     "PrivateUserInfo",
+     "PublicChannelInfo",
+     "PrivateChannelInfo",
+     "ReqInvite",
+     "ReqJoin",
+     "TextMsg",
+     "Bookmark"
+};
+
+
+dictionary MsgBase {
+        UserID from;
+        ChannelID channel; // is this needed
+        MsgType type;
+};
+
+
+dictionary PublicUserInfo : MsgBase {
+           ChannelID reqCh;
+           UVString? firstName;
+           UVString? lastName;
+           UVString? avatarUrl;
+           UVString? email;
+
+};
+
+dictionary PrivateUserInfo : PublicUserInfo {
+           UVString chName;
+};
+
+
+dictionary PublicChannelInfo : MsgBase {
+};
+
+dictionary PrivateChannelInfo : PublicChannelInfo {
+};
+
+dictionary ReqMsgBase : MsgBase {
+};
+
+dictionary ReqInvite : ReqMsgBase {
+           ChannelID forCh;
+};
+
+dictionary ReqJoin : ReqMsgBase {
+           ChannelID toCh; 
+};
+
+dictionary TextMsg : MsgBase {
+           UVString text; 
+};
+
+dictionary Bookmark : MsgBase {
+           ChannelID channel;
+           ChannelSeq lastRead;
+};
+
